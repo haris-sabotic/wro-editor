@@ -55,10 +55,6 @@ Shader::Shader(std::string_view vertex_shader_path,
     }
 }
 
-Shader::~Shader() {
-    destroy();
-}
-
 void Shader::destroy() {
     glDeleteProgram(id);
 }

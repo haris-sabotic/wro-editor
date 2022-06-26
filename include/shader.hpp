@@ -8,13 +8,9 @@ struct Shader {
     // OpenGL id you get from glCreateProgram
     unsigned int id;
 
-    Shader() = default;
-    
     Shader(unsigned int id);
     Shader(std::string_view vertex_shader_path,
            std::string_view frag_shader_path);
-
-    ~Shader();
 
     void destroy();
 

@@ -9,28 +9,12 @@ void Game::reset_projection_matrices() {
     projection = glm::ortho(0.0f, (float)win_width, (float)win_height, 0.0f,
                             -1.0f, 1.0f);
 
-    for (auto shader : m_shaders) {
-        shader.use();
-        shader.set_mat4("projection", projection);
-    }
+    texture_shader->use();
+    texture_shader->set_mat4("projection", projection);
+
+    color_shader->use();
+    color_shader->set_mat4("projection", projection);
 }
-
-size_t Game::create_shader(std::string_view vertex_shader_path,
-                           std::string_view fragment_shader_path) {
-    size_t id = m_shaders.size();
-
-    Shader sh = Shader(vertex_shader_path, fragment_shader_path);
-    m_shaders.push_back(sh);
-
-    glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::ortho(0.0f, (float)win_width, (float)win_height, 0.0f,
-                            -1.0f, 1.0f);
-    m_shaders[id].use();
-    m_shaders[id].set_mat4("projection", projection);
-
-    return id;
-}
-const Shader &Game::shader(size_t id) { return m_shaders[id]; }
 
 Game::Game() {
     glfwInit();
@@ -103,7 +87,11 @@ Game::Game() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    texture_shader = create_shader("shaders/texture.vs", "shaders/texture.fs");
+    texture_shader = std::make_unique<Shader>(
+        Shader("shaders/texture.vs", "shaders/texture.fs"));
+    color_shader = std::make_unique<Shader>(
+        Shader("shaders/color.vs", "shaders/color.fs"));
+    reset_projection_matrices();
 }
 
 Game::~Game() {
@@ -111,14 +99,14 @@ Game::~Game() {
     glDeleteBuffers(1, &quad_vbo);
     glDeleteBuffers(1, &quad_ebo);
 
-    m_shaders.clear();
+    texture_shader->destroy();
 
     glfwTerminate();
 }
 
 void Game::render_texture_centered(unsigned int id, Rect rect, float rotation) {
-    shader(texture_shader).use();
-    shader(texture_shader).set_i("texture_id", id);
+    texture_shader->use();
+    texture_shader->set_i("texture_id", id);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);
@@ -127,7 +115,7 @@ void Game::render_texture_centered(unsigned int id, Rect rect, float rotation) {
         glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
 
-    shader(texture_shader).set_mat4("model", model);
+    texture_shader->set_mat4("model", model);
 
     glBindVertexArray(quad_vao);
     glActiveTexture(GL_TEXTURE0 + id);
@@ -143,4 +131,29 @@ void Game::render_texture(unsigned int id, Rect rect, float rotation) {
                                  rect.y + rect.height / 2, rect.width,
                                  rect.height),
                             rotation);
+}
+
+void Game::render_rect_centered(glm::vec3 color, Rect rect, float rotation) {
+    color_shader->use();
+    color_shader->set_vec3("color", color);
+
+    /// apply transformations
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
+    model =
+        glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
+
+    color_shader->set_mat4("model", model);
+
+    glBindVertexArray(quad_vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+
+void Game::render_rect(glm::vec3 color, Rect rect, float rotation) {
+    render_rect_centered(color,
+                         Rect(rect.x + rect.width / 2, rect.y + rect.height / 2,
+                              rect.width, rect.height),
+                         rotation);
 }
