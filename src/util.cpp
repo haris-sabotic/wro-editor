@@ -24,8 +24,6 @@ Texture load_texture_from_file(std::string_view path) {
         else if (channels == 4)
             format = GL_RGBA;
 
-        printf("%d\n", channels);
-
         glBindTexture(GL_TEXTURE_2D, id);
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
                      GL_UNSIGNED_BYTE, data);

@@ -5,7 +5,7 @@
 
 void Game::reset_projection_matrices() {
     for (auto shader : m_shaders) {
-        shader.set_projection_matrix(WIN_WIDTH, WIN_HEIGHT);
+        shader.set_projection_matrix(win_width, win_height);
     }
 }
 
@@ -15,7 +15,7 @@ size_t Game::create_shader(std::string_view vertex_shader_path,
 
     Shader sh = Shader(vertex_shader_path, fragment_shader_path);
     m_shaders.push_back(sh);
-    m_shaders[id].set_projection_matrix(WIN_WIDTH, WIN_HEIGHT);
+    m_shaders[id].set_projection_matrix(win_width, win_height);
 
     return id;
 }
@@ -27,7 +27,7 @@ Game::Game() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "WRO Editor", NULL, NULL);
+    window = glfwCreateWindow(win_width, win_height, "WRO Editor", NULL, NULL);
     if (window == NULL) {
         printf("Failed to create window!\n");
         glfwTerminate();
@@ -42,8 +42,8 @@ Game::Game() {
     glfwSetFramebufferSizeCallback(
         window, [](GLFWwindow *window, int width, int height) {
             Game *game = (Game *)glfwGetWindowUserPointer(window);
-            game->WIN_WIDTH = width;
-            game->WIN_HEIGHT = height;
+            game->win_width = width;
+            game->win_height = height;
             game->reset_projection_matrices();
 
             glViewport(0, 0, width, height);
@@ -91,6 +91,8 @@ Game::Game() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    texture_shader = create_shader("shaders/texture.vs", "shaders/texture.fs");
 }
 
 Game::~Game() {
@@ -103,19 +105,18 @@ Game::~Game() {
     glfwTerminate();
 }
 
-void Game::render_texture_centered(unsigned int id, const Shader &shader,
-                                   Rect rect, float rotation) {
-    shader.use();
-    shader.set_i("texture_id", id);
+void Game::render_texture_centered(unsigned int id, Rect rect, float rotation) {
+    shader(texture_shader).use();
+    shader(texture_shader).set_i("texture_id", id);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-    model = glm::rotate(model, glm::radians(rotation),
-                        glm::vec3(0.0f, 0.0f, 1.0f));
+    model =
+        glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
 
-    shader.set_mat4("model", model);
+    shader(texture_shader).set_mat4("model", model);
 
     glBindVertexArray(quad_vao);
     glActiveTexture(GL_TEXTURE0 + id);
@@ -125,21 +126,10 @@ void Game::render_texture_centered(unsigned int id, const Shader &shader,
     glBindVertexArray(0);
 }
 
-void Game::render_texture(unsigned int id, const Shader &shader, Rect rect,
-                          float rotation) {
-    render_texture_centered(id, shader,
+void Game::render_texture(unsigned int id, Rect rect, float rotation) {
+    render_texture_centered(id,
                             Rect(rect.x + rect.width / 2,
                                  rect.y + rect.height / 2, rect.width,
                                  rect.height),
                             rotation);
-}
-
-void Game::render_texture_centered(unsigned int id, size_t shader, Rect rect,
-                                   float rotation) {
-    render_texture_centered(id, m_shaders[shader], rect, rotation);
-}
-
-void Game::render_texture(unsigned int id, size_t shader, Rect rect,
-                          float rotation) {
-    render_texture(id, m_shaders[shader], rect, rotation);
 }

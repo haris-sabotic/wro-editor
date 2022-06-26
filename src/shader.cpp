@@ -25,7 +25,7 @@ unsigned int create_shader(std::string_view shader_path, GLenum shader_type) {
            shader_path.data());
     if (!success) {
         glGetShaderInfoLog(shader, 512, NULL, info_log);
-        printf("%s\n", info_log);
+        printf("%s", info_log);
     }
 
     return shader;
@@ -48,17 +48,20 @@ Shader::Shader(std::string_view vertex_shader_path,
     char info_log[512];
     glGetProgramiv(id, GL_LINK_STATUS, &success);
 
-    printf("Linking shader program %s\n", success ? "SUCCEEDED" : "FAILED");
+    printf("Linking shader program %s\n", success ? "SUCCEEDED\n" : "FAILED");
     if (!success) {
         glGetProgramInfoLog(id, 512, NULL, info_log);
-        printf("%s\n", info_log);
+        printf("%s\n\n", info_log);
     }
 }
 
 Shader::~Shader() {
-    glDeleteProgram(id);
+    destroy();
 }
 
+void Shader::destroy() {
+    glDeleteProgram(id);
+}
 
 void Shader::set_projection_matrix(int win_width, int win_height) {
     glm::mat4 projection = glm::mat4(1.0f);
