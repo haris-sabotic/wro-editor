@@ -63,17 +63,6 @@ void Shader::destroy() {
     glDeleteProgram(id);
 }
 
-void Shader::set_projection_matrix(int win_width, int win_height) {
-    glm::mat4 projection = glm::mat4(1.0f);
-    // top-left = 0, 0
-    // bottom-right = width, height
-    projection =
-        glm::ortho(0.0f, (float)win_width, (float)win_height, 0.0f, -1.0f, 1.0f);
-
-    this->use();
-    this->set_mat4("projection", projection);
-}
-
 void Shader::use() const {
     glUseProgram(id);
 }

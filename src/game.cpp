@@ -1,11 +1,17 @@
 #include <glad/glad.h>
 #include "game.hpp"
+#include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include <cstdio>
 
 void Game::reset_projection_matrices() {
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::ortho(0.0f, (float)win_width, (float)win_height, 0.0f,
+                            -1.0f, 1.0f);
+
     for (auto shader : m_shaders) {
-        shader.set_projection_matrix(win_width, win_height);
+        shader.use();
+        shader.set_mat4("projection", projection);
     }
 }
 
@@ -15,7 +21,12 @@ size_t Game::create_shader(std::string_view vertex_shader_path,
 
     Shader sh = Shader(vertex_shader_path, fragment_shader_path);
     m_shaders.push_back(sh);
-    m_shaders[id].set_projection_matrix(win_width, win_height);
+
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::ortho(0.0f, (float)win_width, (float)win_height, 0.0f,
+                            -1.0f, 1.0f);
+    m_shaders[id].use();
+    m_shaders[id].set_mat4("projection", projection);
 
     return id;
 }

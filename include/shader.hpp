@@ -17,12 +17,6 @@ struct Shader {
     ~Shader();
 
     void destroy();
-    
-    // Since everything is entirely 2D, this just calculates the projection
-    // matrix with orthogonal projection.
-    // Used for mapping screen coordinates from the top left to the format
-    // opengl expects
-    void set_projection_matrix(int win_width, int win_height);
 
     void use() const;
 
