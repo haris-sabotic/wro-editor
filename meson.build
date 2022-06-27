@@ -13,12 +13,16 @@ inc = include_directories('include')
 glad_proj = subproject('glad')
 glad_dep = glad_proj.get_variable('libglad_dep')
 
+imgui_proj = subproject('imgui')
+imgui_dep = imgui_proj.get_variable('libimgui_dep')
+
 dep = [ compiler.find_library('m'),
         compiler.find_library('dl'),
         compiler.find_library('GL'),
         compiler.find_library('glfw3'),
         compiler.find_library('pthread'),
-        glad_dep ]
+        glad_dep,
+        imgui_dep ]
 
 executable('wro_editor', src,
   dependencies: dep,
