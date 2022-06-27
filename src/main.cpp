@@ -14,11 +14,14 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        game.render_texture(
+        game.render_texture_centered(
             texture.id,
             auto_fit_rect_in_rect(Rect(0, 0, game.win_width, game.win_height),
                                   rect),
             0.0f);
+
+        game.render_rect_centered(glm::vec3(1, 0, 0), Rect(0, -1.5f, 130, 130),
+                                  45.0f);
 
         glfwSwapBuffers(game.window);
         glfwPollEvents();

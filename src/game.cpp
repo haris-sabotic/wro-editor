@@ -6,8 +6,9 @@
 
 void Game::reset_projection_matrices() {
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::ortho(0.0f, (float)win_width, (float)win_height, 0.0f,
-                            -1.0f, 1.0f);
+    projection =
+        glm::ortho(-(float)win_width / 2, (float)win_width / 2,
+                   (float)win_height / 2, -(float)win_height / 2, -1.0f, 1.0f);
 
     texture_shader->use();
     texture_shader->set_mat4("projection", projection);

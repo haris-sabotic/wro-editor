@@ -50,15 +50,11 @@ Rect auto_fit_rect_in_rect(Rect out_rect, Rect in_rect) {
     /// Fit by width first
     result_rect.width = out_rect.width;
     result_rect.height = result_rect.width / in_rect_aspect;
-    result_rect.y = out_rect.height/2 - result_rect.height/2;
 
     // If fitting by width wasn't right, fit by height instead
     if(result_rect.height > out_rect.height) {
-        result_rect.y = 0.0f;
-
         result_rect.height = out_rect.height;
         result_rect.width = result_rect.height * in_rect_aspect;
-        result_rect.x = out_rect.width/2 - result_rect.width/2;
     }
 
     return result_rect;
