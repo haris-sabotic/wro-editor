@@ -6,13 +6,15 @@
 int main() {
     Game game;
 
-    Texture texture = load_texture_from_file("res/images/map.png");
-
-    Rect rect(0.0f, 0.0f, texture.width, texture.height);
-
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(game.window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
+
+    Texture map_texture = load_texture_from_file("res/images/map.png");
+    Rect map_rect(0.0f, 0.0f, map_texture.width, map_texture.height);
+
+    Rect robot_rect(0.0f, 0.0f, 100.0f, 130.0f);
+    float robot_rotation = -45.0f;
 
     while (!glfwWindowShouldClose(game.window)) {
         if (glfwGetKey(game.window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -22,7 +24,14 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
+        ImGui::Begin("Robot transform");
+        {
+            ImGui::InputFloat("X", &robot_rect.x, 0.5f, 1.0f, "%.2f");
+            ImGui::InputFloat("Y", &robot_rect.y, 0.5f, 1.0f, "%.2f");
+            ImGui::Spacing();
+            ImGui::InputFloat("Rotation", &robot_rotation, 0.5f, 1.0f, "%.2f");
+        }
+        ImGui::End();
 
         ImGui::Render();
 
@@ -30,13 +39,13 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         game.render_texture_centered(
-            texture.id,
+            map_texture.id,
             auto_fit_rect_in_rect(Rect(0, 0, game.win_width, game.win_height),
-                                  rect),
+                                  map_rect),
             0.0f);
 
-        game.render_rect_centered(glm::vec3(1, 0, 0), Rect(0, -1.5f, 130, 130),
-                                  45.0f);
+        game.render_rect_centered(glm::vec3(1, 0, 0), robot_rect,
+                                  robot_rotation);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
