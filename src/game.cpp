@@ -4,17 +4,19 @@
 #include "glm/ext/matrix_transform.hpp"
 #include <cstdio>
 
-void Game::reset_projection_matrices() {
-    glm::mat4 projection = glm::mat4(1.0f);
-    projection =
+void Game::on_resize_window() {
+    map_rect = auto_fit_rect_in_rect(Rect(0.0f, 0.0f, win_width, win_height),
+                                     map_rect);
+
+    glm::mat4 projection =
         glm::ortho(-(float)win_width / 2, (float)win_width / 2,
                    (float)win_height / 2, -(float)win_height / 2, -1.0f, 1.0f);
 
-    texture_shader->use();
-    texture_shader->set_mat4("projection", projection);
+    map_shader->use();
+    map_shader->set_mat4("projection", projection);
 
-    color_shader->use();
-    color_shader->set_mat4("projection", projection);
+    robot_shader->use();
+    robot_shader->set_mat4("projection", projection);
 }
 
 Game::Game() {
@@ -40,7 +42,7 @@ Game::Game() {
             Game *game = (Game *)glfwGetWindowUserPointer(window);
             game->win_width = width;
             game->win_height = height;
-            game->reset_projection_matrices();
+            game->on_resize_window();
 
             glViewport(0, 0, width, height);
         });
@@ -88,11 +90,14 @@ Game::Game() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    texture_shader = std::make_unique<Shader>(
+    map_texture = load_texture_from_file("res/images/map.png");
+    map_rect = Rect(0.0f, 0.0f, map_texture.width, map_texture.height);
+
+    map_shader = std::make_unique<Shader>(
         Shader("shaders/texture.vs", "shaders/texture.fs"));
-    color_shader = std::make_unique<Shader>(
+    robot_shader = std::make_unique<Shader>(
         Shader("shaders/color.vs", "shaders/color.fs"));
-    reset_projection_matrices();
+    on_resize_window();
 }
 
 Game::~Game() {
@@ -100,61 +105,48 @@ Game::~Game() {
     glDeleteBuffers(1, &quad_vbo);
     glDeleteBuffers(1, &quad_ebo);
 
-    texture_shader->destroy();
+    map_shader->destroy();
 
     glfwTerminate();
 }
 
-void Game::render_texture_centered(unsigned int id, Rect rect, float rotation) {
-    texture_shader->use();
-    texture_shader->set_i("texture_id", id);
+void Game::render_map() {
+    map_shader->use();
+    map_shader->set_i("texture_id", map_texture.id);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-    model =
-        glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
+    model = glm::translate(model, glm::vec3(map_rect.x, map_rect.y, 0.0f));
+    model = glm::scale(model, glm::vec3(map_rect.width, map_rect.height, 1.0f));
 
-    texture_shader->set_mat4("model", model);
+    map_shader->set_mat4("model", model);
 
     glBindVertexArray(quad_vao);
-    glActiveTexture(GL_TEXTURE0 + id);
-    glBindTexture(GL_TEXTURE_2D, id);
+    glActiveTexture(GL_TEXTURE0 + map_texture.id);
+    glBindTexture(GL_TEXTURE_2D, map_texture.id);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);
 }
 
-void Game::render_texture(unsigned int id, Rect rect, float rotation) {
-    render_texture_centered(id,
-                            Rect(rect.x + rect.width / 2,
-                                 rect.y + rect.height / 2, rect.width,
-                                 rect.height),
-                            rotation);
-}
+void Game::render_robot(const RobotData &robot_data, glm::vec3 color) {
+    robot_shader->use();
+    robot_shader->set_vec3("color", color);
 
-void Game::render_rect_centered(glm::vec3 color, Rect rect, float rotation) {
-    color_shader->use();
-    color_shader->set_vec3("color", color);
+    Rect rect = robot_data.screen_rect(map_rect, map_texture.width,
+                                                  map_texture.height);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-    model =
-        glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
+    model = glm::rotate(model, glm::radians(robot_data.rotation),
+                        glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(
+        model, glm::vec3(rect.width, rect.height, 1.0f));
 
-    color_shader->set_mat4("model", model);
+    robot_shader->set_mat4("model", model);
 
     glBindVertexArray(quad_vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-}
-
-void Game::render_rect(glm::vec3 color, Rect rect, float rotation) {
-    render_rect_centered(color,
-                         Rect(rect.x + rect.width / 2, rect.y + rect.height / 2,
-                              rect.width, rect.height),
-                         rotation);
 }

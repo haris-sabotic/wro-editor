@@ -1,13 +1,11 @@
 #include "game.hpp"
 #include "ui.hpp"
+#include <cstdio>
 
 int main() {
     Game game;
 
     ui::init(game.window);
-
-    Texture map_texture = load_texture_from_file("res/images/map.png");
-    Rect map_rect(0.0f, 0.0f, map_texture.width, map_texture.height);
 
     RobotData robot(Rect(0.0f, 0.0f, 100.0f, 130.0f), -45.0f);
 
@@ -24,14 +22,8 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        game.render_texture_centered(
-            map_texture.id,
-            auto_fit_rect_in_rect(Rect(0, 0, game.win_width, game.win_height),
-                                  map_rect),
-            0.0f);
-
-        game.render_rect_centered(glm::vec3(1, 0, 0), robot.rect,
-                                  robot.rotation);
+        game.render_map();
+        game.render_robot(robot, glm::vec3(1, 0, 0));
 
         ui::render_gl_draw_data();
 

@@ -7,6 +7,7 @@ struct Rect {
     float x, y;
     float width, height;
 
+    Rect() : x(0), y(0), width(0), height(0) {}
     Rect(float x, float y, float width, float height);
 };
 
@@ -17,6 +18,8 @@ struct Texture {
     /// Original dimensions of the picture
     unsigned int width;
     unsigned int height;
+
+    Texture() : id(0), width(0), height(0) {}
 };
 
 Texture load_texture_from_file(std::string_view path);

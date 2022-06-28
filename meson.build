@@ -6,6 +6,7 @@ compiler = meson.get_compiler('cpp')
 src = [ 'src/main.cpp',
         'src/shader.cpp',
         'src/game.cpp',
+        'src/robot.cpp',
         'src/ui.cpp',
         'src/util.cpp' ]
 
