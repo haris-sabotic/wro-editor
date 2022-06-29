@@ -1,13 +1,12 @@
 #include "game.hpp"
 #include "ui.hpp"
-#include <cstdio>
 
 int main() {
     Game game;
 
     ui::init(game.window);
 
-    RobotData robot(Rect(0.0f, 0.0f, 100.0f, 130.0f), -45.0f);
+    RobotData robot(Rect(0.0f, 0.0f, 170.0f, 190.0f), -45.0f);
 
     while (!glfwWindowShouldClose(game.window)) {
         if (glfwGetKey(game.window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
