@@ -125,10 +125,14 @@ inline void display_single_program(Program &program) {
 }
 
 void ui::programs(std::vector<Program> &programs) {
+    static char buf[128];
+
     ImGui::Begin("Programs");
     {
+        ImGui::InputText("##program name", buf, 128);
+        ImGui::SameLine();
         if(ImGui::Button("New program")) {
-            printf("Create new program\n");
+            printf("Create new program, name: %s\n", buf);
         }
 
         ImGui::Separator();
