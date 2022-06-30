@@ -1,4 +1,5 @@
 #include "ui.hpp"
+#include "imgui_internal.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -21,9 +22,7 @@ void ui::new_frame() {
     ImGui::NewFrame();
 }
 
-void ui::render_frame() {
-    ImGui::Render();
-}
+void ui::render_frame() { ImGui::Render(); }
 
 void ui::render_gl_draw_data() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -40,22 +39,47 @@ void ui::robot_transform(RobotData &robot_data) {
     ImGui::End();
 }
 
-inline void display_single_program(Program &program) {
+inline bool display_single_program(Program &program,
+                                   Instruction **currently_recording) {
     ImGui::TextUnformatted(program.name.c_str());
-    if (ImGui::BeginTable(program.name.c_str(), 5,
+
+    if (ImGui::Button("Add instruction")) {
+        program.instructions.push_back(Instruction());
+        *currently_recording =
+            &program.instructions[program.instructions.size() - 1];
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Delete program")) {
+        return false;
+    }
+
+    if (ImGui::BeginTable(program.name.c_str(), 6,
                           ImGuiTableFlags_BordersInner |
                               ImGuiTableFlags_Resizable |
                               ImGuiTableFlags_SizingFixedFit)) {
         ImGui::TableSetupColumn("ID");
         ImGui::TableSetupColumn("Instruction type");
-        ImGui::TableSetupColumn("Number of rotations");
+        ImGui::TableSetupColumn("Distance(rotations)");
+        ImGui::TableSetupColumn("Angle(degrees)");
         ImGui::TableSetupColumn("Motor speed");
         ImGui::TableSetupColumn("");
         ImGui::TableHeadersRow();
 
         for (size_t row = 0; row < program.instructions.size(); row++) {
             ImGui::TableNextRow();
-            for (int column = 0; column < 5; column++) {
+
+            bool added_flag = false;
+            if (*currently_recording != nullptr &&
+                *currently_recording != &program.instructions[row]) {
+                added_flag = true;
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
+                                    ImGui::GetStyle().Alpha * 0.5f);
+            }
+
+            for (int column = 0; column < 6; column++) {
                 ImGui::TableSetColumnIndex(column);
 
                 switch (column) {
@@ -82,25 +106,43 @@ inline void display_single_program(Program &program) {
                     }
                     break;
                 case 2:
-                    ImGui::PushID(row * 3 + column); // assign unique id
+                    if (program.instructions[row].type ==
+                        InstructionType::MOVE_STRAIGHT) {
+                        ImGui::PushID(row * 3 + column); // assign unique id
 
-                    ImGui::InputFloat("##v",
-                                      &program.instructions[row].rotations);
-                    ImGui::PopID();
+                        ImGui::InputFloat("##v",
+                                          &program.instructions[row].count);
+                        ImGui::PopID();
+                    }
 
                     break;
                 case 3:
+                    if (program.instructions[row].type !=
+                        InstructionType::MOVE_STRAIGHT) {
+                        ImGui::PushID(row * 3 + column); // assign unique id
+
+                        ImGui::InputFloat("##v",
+                                          &program.instructions[row].count);
+                        ImGui::PopID();
+                    }
+
+                    break;
+                case 4:
                     ImGui::PushID(row * 3 + column); // assign unique id
 
                     ImGui::InputFloat("##v", &program.instructions[row].speed);
                     ImGui::PopID();
 
                     break;
-                case 4:
+                case 5:
                     ImGui::PushID(row * 3 + column); // assign unique id
 
                     if (ImGui::Button("Del")) {
                         printf("Erase %zu\n", row);
+
+                        if (*currently_recording == &program.instructions[row])
+                            *currently_recording = nullptr;
+
                         program.instructions.erase(
                             program.instructions.begin() + row);
                     }
@@ -108,39 +150,123 @@ inline void display_single_program(Program &program) {
                     ImGui::SameLine();
                     if (ImGui::Button("Add before")) {
                         printf("Add before %zu\n", row);
+
+                        program.instructions.emplace(
+                            program.instructions.begin() + row);
+                        *currently_recording = &program.instructions[row];
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("Add after")) {
                         printf("Add after %zu\n", row);
+
+                        program.instructions.emplace(
+                            program.instructions.begin() + row + 1);
+                        *currently_recording = &program.instructions[row + 1];
                     }
 
                     ImGui::PopID();
                     break;
                 }
             }
+
+            if (added_flag) {
+                ImGui::PopItemFlag();
+                ImGui::PopStyleVar();
+            }
         }
 
         ImGui::EndTable();
     }
+
+    return true;
 }
 
-void ui::programs(std::vector<Program> &programs) {
+void ui::programs(std::vector<Program> &programs,
+                  Instruction **currently_recording, float robotx, float roboty,
+                  float robot_rotation) {
     static char buf[128];
 
     ImGui::Begin("Programs");
     {
         ImGui::InputText("##program name", buf, 128);
         ImGui::SameLine();
-        if(ImGui::Button("New program")) {
-            printf("Create new program, name: %s\n", buf);
+        if (ImGui::Button("New program")) {
+            if (strlen(buf) > 0) {
+                printf("Create new program, name: %s\n", buf);
+
+                std::vector<Instruction> instructions = {Instruction()};
+                programs.push_back(Program(std::string(buf), instructions,
+                                           robotx, roboty, robot_rotation));
+                *currently_recording =
+                    &programs[programs.size() - 1].instructions[0];
+            }
         }
 
         ImGui::Separator();
-        
+
+        int i = 0;
         for (auto &program : programs) {
-            display_single_program(program);
+            ImGui::PushID(i * 3 + 500); // assign unique id
+
+            if (!display_single_program(program, currently_recording)) {
+                programs.erase(programs.begin() + i);
+            }
+
             ImGui::Spacing();
+
+            ImGui::PopID();
+            i++;
         }
+    }
+    ImGui::End();
+}
+
+void ui::record(Instruction **currently_recording) {
+    ImGui::Begin("Recording...");
+    {
+        if ((*currently_recording)->type == InstructionType::NOOP) {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
+                                ImGui::GetStyle().Alpha * 0.5f);
+        }
+
+        if(ImGui::Button("Stop recording")) {
+            *currently_recording = nullptr;
+            ImGui::End();
+            return;
+        }
+
+        if ((*currently_recording)->type == InstructionType::NOOP) {
+            ImGui::PopItemFlag();
+            ImGui::PopStyleVar();
+        }
+
+        if (ImGui::RadioButton("Move straight", (*currently_recording)->type == InstructionType::MOVE_STRAIGHT)) {
+            (*currently_recording)->type = InstructionType::MOVE_STRAIGHT;
+        }
+        if (ImGui::RadioButton("Spin turn", (*currently_recording)->type == InstructionType::SPIN_TURN)) {
+            (*currently_recording)->type = InstructionType::SPIN_TURN;
+        }
+        if (ImGui::RadioButton("Pivot turn left", (*currently_recording)->type == InstructionType::PIVOT_TURN_LEFT)) {
+            (*currently_recording)->type = InstructionType::PIVOT_TURN_LEFT;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Pivot turn right", (*currently_recording)->type == InstructionType::PIVOT_TURN_RIGHT)) {
+            (*currently_recording)->type = InstructionType::PIVOT_TURN_RIGHT;
+        }
+
+        ImGui::Spacing();
+
+        std::string count_label;
+        if((*currently_recording)->type == InstructionType::NOOP)
+            count_label = "##empty";
+        else if((*currently_recording)->type == InstructionType::MOVE_STRAIGHT)
+            count_label = "Distance(rotations)";
+        else
+            count_label = "Angle(degrees)";
+        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count);
+
+        ImGui::InputFloat("Motor speed", &(*currently_recording)->speed);
     }
     ImGui::End();
 }

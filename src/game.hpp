@@ -6,6 +6,7 @@
 #include "util.hpp"
 #include "robot.hpp"
 #include "shader.hpp"
+#include "record.hpp"
 
 class Game {
     unsigned int quad_vao;
@@ -22,6 +23,8 @@ class Game {
     Rect map_rect;
     Texture map_texture;
 
+    Instruction *currently_recording = nullptr;
+
     Game();
     ~Game();
 
@@ -29,7 +32,6 @@ class Game {
 
     void render_map();
     void render_robot(const RobotData &robot_data, glm::vec3 color);
-
 };
 
 #endif // GAME_HPP

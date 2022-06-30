@@ -14,22 +14,22 @@ int main() {
         Program("Program 1",
                 {
                     Instruction(InstructionType::MOVE_STRAIGHT, 2.0, 50.0),
-                    Instruction(InstructionType::SPIN_TURN, 0.6, 40.0),
+                    Instruction(InstructionType::SPIN_TURN, 90, 40.0),
                     Instruction(InstructionType::MOVE_STRAIGHT, -4.5, 50.0),
-                    Instruction(InstructionType::PIVOT_TURN_LEFT, -1.3, 40.0),
+                    Instruction(InstructionType::PIVOT_TURN_LEFT, -90, 40.0),
                     Instruction(InstructionType::MOVE_STRAIGHT, 3.0, 70.0),
                 },
                 0.0f, 0.0f, -45.0f),
         Program("Program 2",
                 {
                     Instruction(InstructionType::MOVE_STRAIGHT, -5.0, 50.0),
-                    Instruction(InstructionType::SPIN_TURN, 2.0, 40.0),
+                    Instruction(InstructionType::SPIN_TURN, 45, 40.0),
                     Instruction(InstructionType::MOVE_STRAIGHT, 4.5, 70.0),
                 },
                 200.0f, -300.0f, 27.0f),
         Program("Program 3",
                 {
-                    Instruction(InstructionType::SPIN_TURN, 1.3, 40.0),
+                    Instruction(InstructionType::SPIN_TURN, 180, 40.0),
                 },
                 0.0f, 0.0f, 0.0f),
     };
@@ -42,7 +42,11 @@ int main() {
         {
             ui::robot_transform(robot);
 
-            ui::programs(programs);
+            ui::programs(programs, &game.currently_recording, robot.rect.x,
+                         robot.rect.y, robot.rotation);
+
+            if(game.currently_recording != nullptr)
+                ui::record(&game.currently_recording);
         }
         ui::render_frame();
 

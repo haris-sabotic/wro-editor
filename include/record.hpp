@@ -14,11 +14,13 @@ enum class InstructionType {
 
 struct Instruction {
     InstructionType type;
-    float rotations;
+    float count;
     float speed;
 
-    Instruction(InstructionType type, float rotations, float speed)
-        : type(type), rotations(rotations), speed(speed) {}
+    Instruction() : type(InstructionType::NOOP), count(0.0f), speed(0.0f) {}
+
+    Instruction(InstructionType type, float count, float speed)
+        : type(type), count(count), speed(speed) {}
 };
 
 struct Program {

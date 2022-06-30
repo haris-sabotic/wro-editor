@@ -130,23 +130,22 @@ void Game::render_map() {
 }
 
 void Game::render_robot(const RobotData &robot_data, glm::vec3 color) {
-    robot_shader->use();
-    robot_shader->set_vec3("color", color);
+        robot_shader->use();
+        robot_shader->set_vec3("color", color);
 
-    Rect rect = robot_data.screen_rect(map_rect, map_texture.width,
-                                                  map_texture.height);
+        Rect rect = robot_data.screen_rect(map_rect, map_texture.width,
+                                           map_texture.height);
 
-    /// apply transformations
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-    model = glm::rotate(model, glm::radians(robot_data.rotation),
-                        glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(
-        model, glm::vec3(rect.width, rect.height, 1.0f));
+        /// apply transformations
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
+        model = glm::rotate(model, glm::radians(robot_data.rotation),
+                            glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
 
-    robot_shader->set_mat4("model", model);
+        robot_shader->set_mat4("model", model);
 
-    glBindVertexArray(quad_vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-}
+        glBindVertexArray(quad_vao);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    }
