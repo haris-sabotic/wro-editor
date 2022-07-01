@@ -221,7 +221,7 @@ void ui::programs(std::vector<Program> &programs,
     ImGui::End();
 }
 
-void ui::record(Instruction **currently_recording) {
+void ui::record(Instruction **currently_recording, RobotData &robot_data) {
     ImGui::Begin("Recording...");
     {
         if ((*currently_recording)->type == InstructionType::NOOP) {
@@ -231,6 +231,7 @@ void ui::record(Instruction **currently_recording) {
         }
 
         if(ImGui::Button("Stop recording")) {
+            transform_robot_per_instruction(robot_data, *currently_recording);
             *currently_recording = nullptr;
             ImGui::End();
             return;

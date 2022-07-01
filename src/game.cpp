@@ -2,6 +2,7 @@
 #include "game.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
+#include "record.hpp"
 #include <cstdio>
 
 void Game::on_resize_window() {
@@ -129,9 +130,20 @@ void Game::render_map() {
     glBindVertexArray(0);
 }
 
-void Game::render_robot(const RobotData &robot_data, glm::vec3 color) {
+void Game::render_robot(RobotData &robot_data, glm::vec3 color) {
         robot_shader->use();
         robot_shader->set_vec3("color", color);
+
+        RobotData robot_data_bak;
+        bool made_bak = false;
+        if(currently_recording != nullptr) {
+            if (currently_recording->type != InstructionType::NOOP) {
+                robot_data_bak = robot_data;
+                made_bak = true;
+                transform_robot_per_instruction(robot_data,
+                                                currently_recording);
+            }
+        }
 
         Rect rect = robot_data.screen_rect(map_rect, map_texture.width,
                                            map_texture.height);
@@ -148,4 +160,7 @@ void Game::render_robot(const RobotData &robot_data, glm::vec3 color) {
         glBindVertexArray(quad_vao);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+
+        if(made_bak)
+            robot_data = robot_data_bak;
     }

@@ -46,7 +46,7 @@ int main() {
                          robot.rect.y, robot.rotation);
 
             if(game.currently_recording != nullptr)
-                ui::record(&game.currently_recording);
+                ui::record(&game.currently_recording, robot);
         }
         ui::render_frame();
 

@@ -15,7 +15,7 @@ void render_gl_draw_data();
 void robot_transform(RobotData &robot_data);
 void programs(std::vector<Program> &programs, Instruction **currently_recording,
               float robotx, float roboty, float robot_rotation);
-void record(Instruction **currently_recording);
+void record(Instruction **currently_recording, RobotData &robot_data);
 } // namespace ui
 
 #endif // UI_HPP
