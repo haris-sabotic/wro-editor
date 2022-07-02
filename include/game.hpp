@@ -23,11 +23,13 @@ class Game {
     Rect map_rect;
     Texture map_texture;
 
+    // instruction currently being recorded
     Instruction *currently_recording = nullptr;
 
     Game();
     ~Game();
 
+    // function to call when the window is resized
     void on_resize_window();
 
     void render_map();

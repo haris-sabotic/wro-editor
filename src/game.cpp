@@ -6,9 +6,11 @@
 #include <cstdio>
 
 void Game::on_resize_window() {
+    // auto fit map inside the now-resized window
     map_rect = auto_fit_rect_in_rect(Rect(0.0f, 0.0f, win_width, win_height),
                                      map_rect);
 
+    /// reset projection matrices
     glm::mat4 projection =
         glm::ortho(-(float)win_width / 2, (float)win_width / 2,
                    (float)win_height / 2, -(float)win_height / 2, -1.0f, 1.0f);
@@ -91,13 +93,16 @@ Game::Game() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    /// Initialize map
     map_texture = load_texture_from_file("res/images/map.png");
     map_rect = Rect(0.0f, 0.0f, map_texture.width, map_texture.height);
 
+    /// Initialize shaders
     map_shader = std::make_unique<Shader>(
         Shader("shaders/texture.vs", "shaders/texture.fs"));
     robot_shader = std::make_unique<Shader>(
         Shader("shaders/color.vs", "shaders/color.fs"));
+
     on_resize_window();
 }
 
@@ -107,6 +112,7 @@ Game::~Game() {
     glDeleteBuffers(1, &quad_ebo);
 
     map_shader->destroy();
+    robot_shader->destroy();
 
     glfwTerminate();
 }
@@ -131,36 +137,40 @@ void Game::render_map() {
 }
 
 void Game::render_robot(RobotData &robot_data, glm::vec3 color) {
-        robot_shader->use();
-        robot_shader->set_vec3("color", color);
+    robot_shader->use();
+    robot_shader->set_vec3("color", color);
 
-        RobotData robot_data_bak;
-        bool made_bak = false;
-        if(currently_recording != nullptr) {
-            if (currently_recording->type != InstructionType::NOOP) {
-                robot_data_bak = robot_data;
-                made_bak = true;
-                transform_robot_per_instruction(robot_data,
-                                                currently_recording);
-            }
+    /// If an instruction is currently being recorded, then I should apply
+    /// its transformation to the robot each frame
+    RobotData robot_data_bak;
+    bool made_bak = false;
+    if (currently_recording != nullptr) {
+        if (currently_recording->type != InstructionType::NOOP) {
+            robot_data_bak = robot_data;
+            made_bak = true;
+            transform_robot_per_instruction(robot_data, currently_recording);
         }
-
-        Rect rect = robot_data.screen_rect(map_rect, map_texture.width,
-                                           map_texture.height);
-
-        /// apply transformations
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-        model = glm::rotate(model, glm::radians(robot_data.rotation),
-                            glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
-
-        robot_shader->set_mat4("model", model);
-
-        glBindVertexArray(quad_vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-
-        if(made_bak)
-            robot_data = robot_data_bak;
     }
+
+    Rect rect =
+        robot_data.screen_rect(map_rect, map_texture.width, map_texture.height);
+
+    /// apply transformations
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
+    model = glm::rotate(model, glm::radians(robot_data.rotation),
+                        glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
+
+    robot_shader->set_mat4("model", model);
+
+    glBindVertexArray(quad_vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+
+    // If I applied an instruction, then I should reset the robot's transform
+    // after rendering to avoid reapplying it each frame(otherwise the
+    // instruction will run infinitely)
+    if (made_bak)
+        robot_data = robot_data_bak;
+}

@@ -40,11 +40,13 @@ void ui::robot_transform(RobotData &robot_data) {
     ImGui::End();
 }
 
+// returns false if the program needs to be deleted(button press)
 inline bool display_single_program(Program &program,
                                    Instruction **currently_recording,
                                    RobotData &robot_data) {
     ImGui::TextUnformatted(program.name.c_str());
 
+    // Create an empty instruction and start recording
     if (ImGui::Button("Add instruction")) {
         program.instructions.push_back(Instruction());
         *currently_recording =
@@ -74,6 +76,8 @@ inline bool display_single_program(Program &program,
         for (size_t row = 0; row < program.instructions.size(); row++) {
             ImGui::TableNextRow();
 
+            // if currently recording, disable every element(can't edit or
+            // add/remove other instructions)
             bool added_flag = false;
             if (*currently_recording != nullptr &&
                 *currently_recording != &program.instructions[row]) {
@@ -88,9 +92,11 @@ inline bool display_single_program(Program &program,
 
                 switch (column) {
                 case 0:
+                    // display instruction id
                     ImGui::Text("%zu", row);
                     break;
                 case 1:
+                    // display instruction type
                     switch (program.instructions[row].type) {
                     case InstructionType::MOVE_STRAIGHT:
                         ImGui::TextUnformatted("Move straight");
@@ -110,6 +116,8 @@ inline bool display_single_program(Program &program,
                     }
                     break;
                 case 2:
+                    // if the type is move-straight, then display the
+                    // instruction count(distance passed), otherwise leave empty
                     if (program.instructions[row].type ==
                         InstructionType::MOVE_STRAIGHT) {
                         ImGui::PushID(row * 3 + column); // assign unique id
@@ -121,6 +129,8 @@ inline bool display_single_program(Program &program,
 
                     break;
                 case 3:
+                    // leave empty if the instruction type is move-straight,
+                    // otherwise display instruction count(degrees rotated)
                     if (program.instructions[row].type !=
                         InstructionType::MOVE_STRAIGHT) {
                         ImGui::PushID(row * 3 + column); // assign unique id
@@ -132,6 +142,7 @@ inline bool display_single_program(Program &program,
 
                     break;
                 case 4:
+                    // display motor speed
                     ImGui::PushID(row * 3 + column); // assign unique id
 
                     ImGui::InputFloat("##v", &program.instructions[row].speed);
@@ -139,6 +150,9 @@ inline bool display_single_program(Program &program,
 
                     break;
                 case 5:
+                    /// Instruction control buttons(erase, add new instruction
+                    /// before this one, add new instruction after this one)
+
                     ImGui::PushID(row * 3 + column); // assign unique id
 
                     if (ImGui::Button("Del")) {
@@ -195,6 +209,7 @@ void ui::programs(std::vector<Program> &programs,
 
     ImGui::Begin("Programs");
     {
+        // Adding a new program
         ImGui::InputText("##program name", buf, 128);
         ImGui::SameLine();
         if (ImGui::Button("New program")) {
@@ -212,6 +227,7 @@ void ui::programs(std::vector<Program> &programs,
 
         ImGui::Separator();
 
+        // display every program
         int i = 0;
         for (auto &program : programs) {
             ImGui::PushID(i * 3 + 500); // assign unique id
@@ -233,24 +249,25 @@ void ui::programs(std::vector<Program> &programs,
 void ui::record(Instruction **currently_recording, RobotData &robot_data) {
     ImGui::Begin("Recording...");
     {
+        /// If an instruction type hasn't been selected yet, disable the button
+        /// to stop recording
         if ((*currently_recording)->type == InstructionType::NOOP) {
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
                                 ImGui::GetStyle().Alpha * 0.5f);
         }
-
         if (ImGui::Button("Stop recording")) {
             transform_robot_per_instruction(robot_data, *currently_recording);
             *currently_recording = nullptr;
             ImGui::End();
             return;
         }
-
         if ((*currently_recording)->type == InstructionType::NOOP) {
             ImGui::PopItemFlag();
             ImGui::PopStyleVar();
         }
 
+        /// Radio buttons to select the type - maybe switch to a list box?
         if (ImGui::RadioButton("Move straight",
                                (*currently_recording)->type ==
                                    InstructionType::MOVE_STRAIGHT)) {
@@ -275,11 +292,12 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data) {
         ImGui::Spacing();
 
         std::string count_label;
+        // don't display a label if no instruction's been selected
         if ((*currently_recording)->type == InstructionType::NOOP)
             count_label = "##empty";
         else if ((*currently_recording)->type == InstructionType::MOVE_STRAIGHT)
             count_label = "Distance(rotations)";
-        else
+        else // every other instruction is rotation-related
             count_label = "Angle(degrees)";
         ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count);
 
