@@ -1,6 +1,4 @@
 #include "robot.hpp"
-#include "glm/trigonometric.hpp"
-#include "record.hpp"
 
 Rect RobotData::screen_rect(const Rect &map_rect, int board_width,
                             int board_height) const {
@@ -37,5 +35,16 @@ void transform_robot_per_instruction(RobotData &robot_data,
             instruction->count * glm::cos(glm::radians(robot_data.rotation));
         robot_data.rect.x +=
             instruction->count * glm::sin(glm::radians(robot_data.rotation));
+    }
+}
+
+void transform_robot_until_instruction(RobotData &robot_data,
+                                       const Program &program,
+                                       size_t instruction_index) {
+    robot_data.rect.x = program.start_x;
+    robot_data.rect.y = program.start_y;
+    robot_data.rotation = program.start_rotation;
+    for (size_t i = 0; i < instruction_index; i++) {
+        transform_robot_per_instruction(robot_data, &program.instructions[i]);
     }
 }

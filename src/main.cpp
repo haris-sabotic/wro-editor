@@ -42,10 +42,9 @@ int main() {
         {
             ui::robot_transform(robot);
 
-            ui::programs(programs, &game.currently_recording, robot.rect.x,
-                         robot.rect.y, robot.rotation);
+            ui::programs(programs, &game.currently_recording, robot);
 
-            if(game.currently_recording != nullptr)
+            if (game.currently_recording != nullptr)
                 ui::record(&game.currently_recording, robot);
         }
         ui::render_frame();

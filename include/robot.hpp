@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "record.hpp"
 #include "util.hpp"
+#include <cstddef>
 
 struct RobotData {
     Rect rect;
@@ -12,12 +13,16 @@ struct RobotData {
     RobotData() : rect(Rect()), rotation(0.0f) {}
 
     Rect screen_rect(const Rect &map_rect, int board_width,
-                                 int board_height) const;
+                     int board_height) const;
 
     RobotData(Rect _rect, float _rotation) : rect(_rect), rotation(_rotation){};
 };
 
 void transform_robot_per_instruction(RobotData &robot_data,
                                      const Instruction *instruction);
+
+void transform_robot_until_instruction(RobotData &robot_data,
+                                       const Program &program,
+                                       size_t instruction_index);
 
 #endif // ROBOT_HPP

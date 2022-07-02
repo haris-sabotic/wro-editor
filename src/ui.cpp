@@ -1,5 +1,6 @@
 #include "ui.hpp"
 #include "imgui_internal.h"
+#include "robot.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -40,13 +41,16 @@ void ui::robot_transform(RobotData &robot_data) {
 }
 
 inline bool display_single_program(Program &program,
-                                   Instruction **currently_recording) {
+                                   Instruction **currently_recording,
+                                   RobotData &robot_data) {
     ImGui::TextUnformatted(program.name.c_str());
 
     if (ImGui::Button("Add instruction")) {
         program.instructions.push_back(Instruction());
         *currently_recording =
             &program.instructions[program.instructions.size() - 1];
+        transform_robot_until_instruction(robot_data, program,
+                                          program.instructions.size() - 1);
     }
 
     ImGui::SameLine();
@@ -154,6 +158,8 @@ inline bool display_single_program(Program &program,
                         program.instructions.emplace(
                             program.instructions.begin() + row);
                         *currently_recording = &program.instructions[row];
+                        transform_robot_until_instruction(robot_data, program,
+                                                          row);
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("Add after")) {
@@ -162,6 +168,8 @@ inline bool display_single_program(Program &program,
                         program.instructions.emplace(
                             program.instructions.begin() + row + 1);
                         *currently_recording = &program.instructions[row + 1];
+                        transform_robot_until_instruction(robot_data, program,
+                                                          row + 1);
                     }
 
                     ImGui::PopID();
@@ -182,8 +190,7 @@ inline bool display_single_program(Program &program,
 }
 
 void ui::programs(std::vector<Program> &programs,
-                  Instruction **currently_recording, float robotx, float roboty,
-                  float robot_rotation) {
+                  Instruction **currently_recording, RobotData &robot_data) {
     static char buf[128];
 
     ImGui::Begin("Programs");
@@ -196,7 +203,8 @@ void ui::programs(std::vector<Program> &programs,
 
                 std::vector<Instruction> instructions = {Instruction()};
                 programs.push_back(Program(std::string(buf), instructions,
-                                           robotx, roboty, robot_rotation));
+                                           robot_data.rect.x, robot_data.rect.y,
+                                           robot_data.rotation));
                 *currently_recording =
                     &programs[programs.size() - 1].instructions[0];
             }
@@ -208,7 +216,8 @@ void ui::programs(std::vector<Program> &programs,
         for (auto &program : programs) {
             ImGui::PushID(i * 3 + 500); // assign unique id
 
-            if (!display_single_program(program, currently_recording)) {
+            if (!display_single_program(program, currently_recording,
+                                        robot_data)) {
                 programs.erase(programs.begin() + i);
             }
 
@@ -230,7 +239,7 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data) {
                                 ImGui::GetStyle().Alpha * 0.5f);
         }
 
-        if(ImGui::Button("Stop recording")) {
+        if (ImGui::Button("Stop recording")) {
             transform_robot_per_instruction(robot_data, *currently_recording);
             *currently_recording = nullptr;
             ImGui::End();
@@ -242,26 +251,33 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data) {
             ImGui::PopStyleVar();
         }
 
-        if (ImGui::RadioButton("Move straight", (*currently_recording)->type == InstructionType::MOVE_STRAIGHT)) {
+        if (ImGui::RadioButton("Move straight",
+                               (*currently_recording)->type ==
+                                   InstructionType::MOVE_STRAIGHT)) {
             (*currently_recording)->type = InstructionType::MOVE_STRAIGHT;
         }
-        if (ImGui::RadioButton("Spin turn", (*currently_recording)->type == InstructionType::SPIN_TURN)) {
+        if (ImGui::RadioButton("Spin turn", (*currently_recording)->type ==
+                                                InstructionType::SPIN_TURN)) {
             (*currently_recording)->type = InstructionType::SPIN_TURN;
         }
-        if (ImGui::RadioButton("Pivot turn left", (*currently_recording)->type == InstructionType::PIVOT_TURN_LEFT)) {
+        if (ImGui::RadioButton("Pivot turn left",
+                               (*currently_recording)->type ==
+                                   InstructionType::PIVOT_TURN_LEFT)) {
             (*currently_recording)->type = InstructionType::PIVOT_TURN_LEFT;
         }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Pivot turn right", (*currently_recording)->type == InstructionType::PIVOT_TURN_RIGHT)) {
+        if (ImGui::RadioButton("Pivot turn right",
+                               (*currently_recording)->type ==
+                                   InstructionType::PIVOT_TURN_RIGHT)) {
             (*currently_recording)->type = InstructionType::PIVOT_TURN_RIGHT;
         }
 
         ImGui::Spacing();
 
         std::string count_label;
-        if((*currently_recording)->type == InstructionType::NOOP)
+        if ((*currently_recording)->type == InstructionType::NOOP)
             count_label = "##empty";
-        else if((*currently_recording)->type == InstructionType::MOVE_STRAIGHT)
+        else if ((*currently_recording)->type == InstructionType::MOVE_STRAIGHT)
             count_label = "Distance(rotations)";
         else
             count_label = "Angle(degrees)";
