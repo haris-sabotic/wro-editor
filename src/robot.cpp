@@ -1,15 +1,16 @@
 #include "robot.hpp"
 
-Rect RobotData::screen_rect(const Rect &map_rect, int board_width,
-                            int board_height) const {
-    float ux = rect.x / board_width;
-    float uy = rect.y / board_height;
+Rect adjust_robot_rect_to_screen(Rect robot_rect, float map_screen_width,
+                                 float map_screen_height, float map_real_width,
+                                 float map_real_height) {
+    float ux = robot_rect.x / map_real_width;
+    float uy = robot_rect.y / map_real_height;
 
-    float uw = rect.width / board_width;
-    float uh = rect.height / board_height;
+    float uw = robot_rect.width / map_real_width;
+    float uh = robot_rect.height / map_real_height;
 
-    return Rect(map_rect.width * ux, map_rect.height * uy, map_rect.width * uw,
-                map_rect.height * uh);
+    return Rect{map_screen_width * ux, map_screen_height * uy, map_screen_width * uw,
+                map_screen_height * uh};
 }
 
 void transform_robot_per_instruction(RobotData &robot_data,

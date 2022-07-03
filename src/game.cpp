@@ -3,12 +3,13 @@
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "record.hpp"
+#include "robot.hpp"
 #include <cstdio>
 
 void Game::on_resize_window() {
     // auto fit map inside the now-resized window
-    map_rect = auto_fit_rect_in_rect(Rect(0.0f, 0.0f, win_width, win_height),
-                                     map_rect);
+    map_rect = auto_fit_rect_in_rect(
+        Rect{0.0f, 0.0f, (float)win_width, (float)win_height}, map_rect);
 
     /// reset projection matrices
     glm::mat4 projection =
@@ -95,7 +96,8 @@ Game::Game() {
 
     /// Initialize map
     map_texture = load_texture_from_file("res/images/map.png");
-    map_rect = Rect(0.0f, 0.0f, map_texture.width, map_texture.height);
+    map_rect =
+        Rect{0.0f, 0.0f, (float)map_texture.width, (float)map_texture.height};
 
     /// Initialize shaders
     map_shader = std::make_unique<Shader>(
@@ -152,8 +154,9 @@ void Game::render_robot(RobotData &robot_data, glm::vec3 color) {
         }
     }
 
-    Rect rect =
-        robot_data.screen_rect(map_rect, map_texture.width, map_texture.height);
+    Rect rect = adjust_robot_rect_to_screen(robot_data.rect, map_rect.width,
+                                            map_rect.height, map_texture.width,
+                                            map_texture.height);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);

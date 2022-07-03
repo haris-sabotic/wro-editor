@@ -8,7 +8,7 @@ int main() {
 
     ui::init(game.window);
 
-    RobotData robot(Rect(0.0f, 0.0f, 170.0f, 190.0f), -45.0f);
+    RobotData robot{Rect{0.0f, 0.0f, 170.0f, 190.0f}, -45.0f};
 
     std::vector<Program> programs = {
         Program("Program 1",

@@ -9,14 +9,11 @@
 struct RobotData {
     Rect rect;
     float rotation;
-
-    RobotData() : rect(Rect()), rotation(0.0f) {}
-
-    Rect screen_rect(const Rect &map_rect, int board_width,
-                     int board_height) const;
-
-    RobotData(Rect _rect, float _rotation) : rect(_rect), rotation(_rotation){};
 };
+
+Rect adjust_robot_rect_to_screen(Rect robot_rect, float map_screen_width,
+                                 float map_screen_height, float map_real_width,
+                                 float map_real_height);
 
 // move/rotate robot according to the instruction passed
 void transform_robot_per_instruction(RobotData &robot_data,

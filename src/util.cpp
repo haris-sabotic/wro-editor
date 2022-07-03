@@ -4,13 +4,6 @@
 #include <glad/glad.h>
 
 
-Rect::Rect(float x, float y, float width, float height) {
-    this->x = x;
-    this->y = y;
-    this->width = width;
-    this->height = height;
-}
-
 Texture load_texture_from_file(std::string_view path) {
     unsigned int id;
     glGenTextures(1, &id);
@@ -45,7 +38,10 @@ Texture load_texture_from_file(std::string_view path) {
 
 Rect auto_fit_rect_in_rect(Rect out_rect, Rect in_rect) {
     double in_rect_aspect = in_rect.width / in_rect.height;
-    Rect result_rect(0.0f, 0.0f, 0.0f, 0.0f);
+    Rect result_rect;
+
+    result_rect.x = 0.0f;
+    result_rect.y = 0.0f;
 
     /// Fit by width first
     result_rect.width = out_rect.width;
