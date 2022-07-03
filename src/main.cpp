@@ -35,9 +35,6 @@ int main() {
     };
 
     while (!glfwWindowShouldClose(game.window)) {
-        if (glfwGetKey(game.window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(game.window, true);
-
         ui::new_frame();
         {
             ui::robot_transform(robot, game.currently_recording != nullptr);
