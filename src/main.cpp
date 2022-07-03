@@ -40,7 +40,7 @@ int main() {
 
         ui::new_frame();
         {
-            ui::robot_transform(robot);
+            ui::robot_transform(robot, game.currently_recording != nullptr);
 
             ui::programs(programs, &game.currently_recording, robot);
 

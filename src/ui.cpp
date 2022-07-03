@@ -29,13 +29,24 @@ void ui::render_gl_draw_data() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void ui::robot_transform(RobotData &robot_data) {
+void ui::robot_transform(RobotData &robot_data, bool disabled) {
     ImGui::Begin("Robot transform");
     {
+        if (disabled) {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
+                                ImGui::GetStyle().Alpha * 0.5f);
+        }
+
         ImGui::InputFloat("X", &robot_data.rect.x, 0.5f, 1.0f, "%.2f");
         ImGui::InputFloat("Y", &robot_data.rect.y, 0.5f, 1.0f, "%.2f");
         ImGui::Spacing();
         ImGui::InputFloat("Rotation", &robot_data.rotation, 0.5f, 1.0f, "%.2f");
+
+        if (disabled) {
+            ImGui::PopItemFlag();
+            ImGui::PopStyleVar();
+        }
     }
     ImGui::End();
 }

@@ -15,7 +15,7 @@ void render_frame();
 void render_gl_draw_data();
 
 // Window showing the player's position and rotation
-void robot_transform(RobotData &robot_data);
+void robot_transform(RobotData &robot_data, bool disabled);
 
 // List of programs and their instructions
 //
