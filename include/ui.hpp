@@ -28,6 +28,10 @@ void programs(std::vector<Program> &programs, Instruction **currently_recording,
 //
 // Lets you choose a type, set the motor speed and count(degrees rotated or
 // distance passed depending on the instruction type)
+//
+// Also the motor_speeds map argument remembers motor speeds for each
+// instruction type so that when you create a new instruction you get the last
+// value instead of just 0
 void record(Instruction **currently_recording, RobotData &robot_data,
             std::unordered_map<InstructionType, float> &motor_speeds);
 } // namespace ui
