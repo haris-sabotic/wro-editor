@@ -34,6 +34,10 @@ int main() {
                 0.0f, 0.0f, 0.0f),
     };
 
+    std::unordered_map<InstructionType, float> motor_speeds;
+    motor_speeds[InstructionType::MOVE_STRAIGHT] = 50.0f;
+    motor_speeds[InstructionType::SPIN_TURN] = 40.0f;
+
     while (!glfwWindowShouldClose(game.window)) {
         ui::new_frame();
         {
@@ -42,7 +46,7 @@ int main() {
             ui::programs(programs, &game.currently_recording, robot);
 
             if (game.currently_recording != nullptr)
-                ui::record(&game.currently_recording, robot);
+                ui::record(&game.currently_recording, robot, motor_speeds);
         }
         ui::render_frame();
 

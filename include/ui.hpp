@@ -1,6 +1,7 @@
 #ifndef UI_HPP
 #define UI_HPP
 
+#include <unordered_map>
 #include <GLFW/glfw3.h>
 #include "robot.hpp"
 #include "record.hpp"
@@ -27,7 +28,8 @@ void programs(std::vector<Program> &programs, Instruction **currently_recording,
 //
 // Lets you choose a type, set the motor speed and count(degrees rotated or
 // distance passed depending on the instruction type)
-void record(Instruction **currently_recording, RobotData &robot_data);
+void record(Instruction **currently_recording, RobotData &robot_data,
+            std::unordered_map<InstructionType, float> &motor_speeds);
 } // namespace ui
 
 #endif // UI_HPP

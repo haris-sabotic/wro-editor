@@ -1,5 +1,6 @@
 #include "ui.hpp"
 #include "imgui_internal.h"
+#include "record.hpp"
 #include "robot.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -257,7 +258,8 @@ void ui::programs(std::vector<Program> &programs,
     ImGui::End();
 }
 
-void ui::record(Instruction **currently_recording, RobotData &robot_data) {
+void ui::record(Instruction **currently_recording, RobotData &robot_data,
+            std::unordered_map<InstructionType, float> &motor_speeds) {
     ImGui::Begin("Recording...");
     {
         /// If an instruction type hasn't been selected yet, disable the button
@@ -268,6 +270,8 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data) {
                                 ImGui::GetStyle().Alpha * 0.5f);
         }
         if (ImGui::Button("Stop recording")) {
+            motor_speeds[(*currently_recording)->type] =
+                (*currently_recording)->speed;
             transform_robot_per_instruction(robot_data, *currently_recording);
             *currently_recording = nullptr;
             ImGui::End();
@@ -283,21 +287,29 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data) {
                                (*currently_recording)->type ==
                                    InstructionType::MOVE_STRAIGHT)) {
             (*currently_recording)->type = InstructionType::MOVE_STRAIGHT;
+            (*currently_recording)->speed =
+                motor_speeds[InstructionType::MOVE_STRAIGHT];
         }
         if (ImGui::RadioButton("Spin turn", (*currently_recording)->type ==
                                                 InstructionType::SPIN_TURN)) {
             (*currently_recording)->type = InstructionType::SPIN_TURN;
+            (*currently_recording)->speed =
+                motor_speeds[InstructionType::SPIN_TURN];
         }
         if (ImGui::RadioButton("Pivot turn left",
                                (*currently_recording)->type ==
                                    InstructionType::PIVOT_TURN_LEFT)) {
             (*currently_recording)->type = InstructionType::PIVOT_TURN_LEFT;
+            (*currently_recording)->speed =
+                motor_speeds[InstructionType::PIVOT_TURN_LEFT];
         }
         ImGui::SameLine();
         if (ImGui::RadioButton("Pivot turn right",
                                (*currently_recording)->type ==
                                    InstructionType::PIVOT_TURN_RIGHT)) {
             (*currently_recording)->type = InstructionType::PIVOT_TURN_RIGHT;
+            (*currently_recording)->speed =
+                motor_speeds[InstructionType::PIVOT_TURN_RIGHT];
         }
 
         ImGui::Spacing();
