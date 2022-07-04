@@ -39,10 +39,10 @@ void ui::robot_transform(RobotData &robot_data, bool disabled) {
                                 ImGui::GetStyle().Alpha * 0.5f);
         }
 
-        ImGui::InputFloat("X", &robot_data.rect.x, 0.5f, 1.0f, "%.2f");
-        ImGui::InputFloat("Y", &robot_data.rect.y, 0.5f, 1.0f, "%.2f");
+        ImGui::InputFloat("X", &robot_data.rect.x, 0.5f, 1.0f);
+        ImGui::InputFloat("Y", &robot_data.rect.y, 0.5f, 1.0f);
         ImGui::Spacing();
-        ImGui::InputFloat("Rotation", &robot_data.rotation, 0.5f, 1.0f, "%.2f");
+        ImGui::InputFloat("Rotation", &robot_data.rotation, 0.5f, 1.0f);
 
         if (disabled) {
             ImGui::PopItemFlag();
@@ -322,9 +322,9 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data,
             count_label = "Distance(rotations)";
         else // every other instruction is rotation-related
             count_label = "Angle(degrees)";
-        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count);
+        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count, 1.0f, 2.0f);
 
-        ImGui::InputFloat("Motor speed", &(*currently_recording)->speed);
+        ImGui::InputFloat("Motor speed", &(*currently_recording)->speed, 1.0f, 2.0f);
     }
     ImGui::End();
 }
