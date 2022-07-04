@@ -3,7 +3,6 @@
 #include "stb_image.h"
 #include <glad/glad.h>
 
-
 Texture load_texture_from_file(std::string_view path) {
     unsigned int id;
     glGenTextures(1, &id);
@@ -48,7 +47,7 @@ Rect auto_fit_rect_in_rect(Rect out_rect, Rect in_rect) {
     result_rect.height = result_rect.width / in_rect_aspect;
 
     // If fitting by width wasn't right, fit by height instead
-    if(result_rect.height > out_rect.height) {
+    if (result_rect.height > out_rect.height) {
         result_rect.height = out_rect.height;
         result_rect.width = result_rect.height * in_rect_aspect;
     }

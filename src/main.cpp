@@ -1,7 +1,5 @@
 #include "game.hpp"
 #include "ui.hpp"
-#include "record.hpp"
-#include <vector>
 
 int main() {
     Game game;

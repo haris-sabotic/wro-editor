@@ -56,164 +56,102 @@ void ui::robot_transform(RobotData &robot_data, bool disabled) {
 inline bool display_single_program(Program &program,
                                    Instruction **currently_recording,
                                    RobotData &robot_data) {
-    ImGui::TextUnformatted(program.name.c_str());
+    if (ImGui::CollapsingHeader(program.name.c_str())) {
+        // Create an empty instruction and start recording
+        if (ImGui::Button("Add instruction")) {
+            program.instructions.push_back(Instruction());
+            *currently_recording =
+                &program.instructions[program.instructions.size() - 1];
+            transform_robot_until_instruction(robot_data, program,
+                                              program.instructions.size() - 1);
+        }
 
-    // Create an empty instruction and start recording
-    if (ImGui::Button("Add instruction")) {
-        program.instructions.push_back(Instruction());
-        *currently_recording =
-            &program.instructions[program.instructions.size() - 1];
-        transform_robot_until_instruction(robot_data, program,
-                                          program.instructions.size() - 1);
-    }
+        ImGui::SameLine();
 
-    ImGui::SameLine();
+        if (ImGui::Button("Delete program")) {
+            return false;
+        }
 
-    if (ImGui::Button("Delete program")) {
-        return false;
-    }
+        ImGui::Spacing();
 
-    if (ImGui::BeginTable(program.name.c_str(), 6,
-                          ImGuiTableFlags_BordersInner |
-                              ImGuiTableFlags_Resizable |
-                              ImGuiTableFlags_SizingFixedFit)) {
-        ImGui::TableSetupColumn("ID");
-        ImGui::TableSetupColumn("Instruction type");
-        ImGui::TableSetupColumn("Distance(rotations)");
-        ImGui::TableSetupColumn("Angle(degrees)");
-        ImGui::TableSetupColumn("Motor speed");
-        ImGui::TableSetupColumn("");
-        ImGui::TableHeadersRow();
+        // display program instructions
+        for (size_t i = 0; i < program.instructions.size(); i++) {
+            ImGui::PushID(i * 3 + 500); // assign unique id
 
-        for (size_t row = 0; row < program.instructions.size(); row++) {
-            ImGui::TableNextRow();
-
-            // if currently recording, disable every element(can't edit or
-            // add/remove other instructions)
+            // if currently recording an instruction then open it and disable
+            // all the remaining ones
             bool added_flag = false;
-            if (*currently_recording != nullptr &&
-                *currently_recording != &program.instructions[row]) {
-                added_flag = true;
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
-                                    ImGui::GetStyle().Alpha * 0.5f);
+            if (*currently_recording != nullptr) {
+                if (*currently_recording == &program.instructions[i]) {
+                    ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+                } else {
+                    added_flag = true;
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
+                                        ImGui::GetStyle().Alpha * 0.5f);
+                }
             }
 
-            for (int column = 0; column < 6; column++) {
-                ImGui::TableSetColumnIndex(column);
+            if (ImGui::TreeNode(
+                    instruction_type_to_string(program.instructions[i].type))) {
+                ImGui::PushID(i * 3 + 500); // assign unique id
+                /// Instruction control buttons(erase, add new instruction
+                /// before this one, add new instruction after this one)
+                if (ImGui::Button("Del")) {
+                    if (*currently_recording == &program.instructions[i])
+                        *currently_recording = nullptr;
 
-                switch (column) {
-                case 0:
-                    // display instruction id
-                    ImGui::Text("%zu", row);
-                    break;
-                case 1:
-                    // display instruction type
-                    switch (program.instructions[row].type) {
-                    case InstructionType::MOVE_STRAIGHT:
-                        ImGui::TextUnformatted("Move straight");
-                        break;
-                    case InstructionType::SPIN_TURN:
-                        ImGui::TextUnformatted("Spin turn");
-                        break;
-                    case InstructionType::PIVOT_TURN_LEFT:
-                        ImGui::TextUnformatted("Pivot turn left");
-                        break;
-                    case InstructionType::PIVOT_TURN_RIGHT:
-                        ImGui::TextUnformatted("Pivot turn right");
-                        break;
-                    case InstructionType::NOOP:
-                        ImGui::TextUnformatted("Empty");
-                        break;
-                    }
-                    break;
-                case 2:
-                    // if the type is move-straight, then display the
-                    // instruction count(distance passed), otherwise leave empty
-                    if (program.instructions[row].type ==
-                        InstructionType::MOVE_STRAIGHT) {
-                        ImGui::PushID(row * 3 + column); // assign unique id
-
-                        ImGui::InputFloat("##v",
-                                          &program.instructions[row].count);
-                        ImGui::PopID();
-                    }
-
-                    break;
-                case 3:
-                    // leave empty if the instruction type is move-straight,
-                    // otherwise display instruction count(degrees rotated)
-                    if (program.instructions[row].type !=
-                        InstructionType::MOVE_STRAIGHT) {
-                        ImGui::PushID(row * 3 + column); // assign unique id
-
-                        ImGui::InputFloat("##v",
-                                          &program.instructions[row].count);
-                        ImGui::PopID();
-                    }
-
-                    break;
-                case 4:
-                    // display motor speed
-                    ImGui::PushID(row * 3 + column); // assign unique id
-
-                    ImGui::InputFloat("##v", &program.instructions[row].speed);
-                    ImGui::PopID();
-
-                    break;
-                case 5:
-                    /// Instruction control buttons(erase, add new instruction
-                    /// before this one, add new instruction after this one)
-
-                    ImGui::PushID(row * 3 + column); // assign unique id
-
-                    if (ImGui::Button("Del")) {
-                        printf("Erase %zu\n", row);
-
-                        if (*currently_recording == &program.instructions[row])
-                            *currently_recording = nullptr;
-
-                        program.instructions.erase(
-                            program.instructions.begin() + row);
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Add before")) {
-                        printf("Add before %zu\n", row);
-
-                        program.instructions.emplace(
-                            program.instructions.begin() + row);
-                        *currently_recording = &program.instructions[row];
-                        transform_robot_until_instruction(robot_data, program,
-                                                          row);
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Add after")) {
-                        printf("Add after %zu\n", row);
-
-                        program.instructions.emplace(
-                            program.instructions.begin() + row + 1);
-                        *currently_recording = &program.instructions[row + 1];
-                        transform_robot_until_instruction(robot_data, program,
-                                                          row + 1);
-                    }
-
-                    ImGui::PopID();
-                    break;
+                    program.instructions.erase(program.instructions.begin() +
+                                               i);
                 }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Add before")) {
+                    program.instructions.emplace(program.instructions.begin() +
+                                                 i);
+                    *currently_recording = &program.instructions[i];
+                    transform_robot_until_instruction(robot_data, program, i);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Add after")) {
+                    program.instructions.emplace(program.instructions.begin() +
+                                                 i + 1);
+                    *currently_recording = &program.instructions[i + 1];
+                    transform_robot_until_instruction(robot_data, program,
+                                                      i + 1);
+                }
+
+                // Instruction properties
+                if (program.instructions[i].type != InstructionType::NOOP) {
+                    // display instruction count(distance passed for
+                    // MOVE_STRAIGHT, angle of rotation for all turn-related
+                    // instructions)
+                    const char *label = (program.instructions[i].type ==
+                                         InstructionType::MOVE_STRAIGHT)
+                                            ? "Distance(rotations)"
+                                            : "Angle(degrees)";
+                    ImGui::InputFloat(label, &program.instructions[i].count);
+
+                    // display motor speed
+                    ImGui::InputFloat("Motor speed",
+                                      &program.instructions[i].speed);
+                }
+
+                ImGui::PopID();
+                ImGui::TreePop();
             }
 
             if (added_flag) {
                 ImGui::PopItemFlag();
                 ImGui::PopStyleVar();
             }
+            ImGui::PopID();
         }
-
-        ImGui::EndTable();
     }
 
     return true;
 }
+
 
 void ui::programs(std::vector<Program> &programs,
                   Instruction **currently_recording, RobotData &robot_data) {
