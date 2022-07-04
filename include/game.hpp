@@ -20,6 +20,8 @@ class Game {
     int win_height = 800;
     GLFWwindow *window;
 
+    const int MAP_REAL_WIDTH = 2232;
+    const int MAP_REAL_HEIGHT = 1080;
     Rect map_rect;
     Texture map_texture;
 
