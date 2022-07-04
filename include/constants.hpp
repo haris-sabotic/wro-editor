@@ -8,6 +8,6 @@ const float GAME_START_X = 0.0f;
 const float GAME_START_Y = -1.5f;
 const float GAME_START_ROTATION = -45.0f;
 
-const float DISTANCE_PASSED_PER_MOTOR_ROTATION = 200.0f;
+const float DISTANCE_PASSED_PER_MOTOR_ROTATION = 120.0f;
 
 #endif // CONSTANTS_HPP

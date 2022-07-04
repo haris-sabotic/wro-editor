@@ -322,7 +322,7 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data,
             count_label = "Distance(rotations)";
         else // every other instruction is rotation-related
             count_label = "Angle(degrees)";
-        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count, 1.0f, 2.0f);
+        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count, 0.5f, 1.0f);
 
         ImGui::InputFloat("Motor speed", &(*currently_recording)->speed, 1.0f, 2.0f);
     }
