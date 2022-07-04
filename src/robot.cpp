@@ -1,13 +1,13 @@
 #include "robot.hpp"
+#include "constants.hpp"
 
 Rect adjust_robot_rect_to_screen(Rect robot_rect, float map_screen_width,
-                                 float map_screen_height, float map_real_width,
-                                 float map_real_height) {
-    float ux = robot_rect.x / map_real_width;
-    float uy = robot_rect.y / map_real_height;
+                                 float map_screen_height) {
+    float ux = robot_rect.x / MAP_REAL_WIDTH;
+    float uy = robot_rect.y / MAP_REAL_HEIGHT;
 
-    float uw = robot_rect.width / map_real_width;
-    float uh = robot_rect.height / map_real_height;
+    float uw = robot_rect.width / MAP_REAL_WIDTH;
+    float uh = robot_rect.height / MAP_REAL_HEIGHT;
 
     return Rect{map_screen_width * ux, map_screen_height * uy, map_screen_width * uw,
                 map_screen_height * uh};

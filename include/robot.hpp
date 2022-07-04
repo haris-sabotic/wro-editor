@@ -12,8 +12,7 @@ struct RobotData {
 };
 
 Rect adjust_robot_rect_to_screen(Rect robot_rect, float map_screen_width,
-                                 float map_screen_height, float map_real_width,
-                                 float map_real_height);
+                                 float map_screen_height);
 
 // move/rotate robot according to the instruction passed
 void transform_robot_per_instruction(RobotData &robot_data,

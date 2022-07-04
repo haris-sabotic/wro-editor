@@ -155,8 +155,7 @@ void Game::render_robot(RobotData &robot_data, glm::vec3 color) {
     }
 
     Rect rect = adjust_robot_rect_to_screen(robot_data.rect, map_rect.width,
-                                            map_rect.height, MAP_REAL_WIDTH,
-                                            MAP_REAL_HEIGHT);
+                                            map_rect.height);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);
