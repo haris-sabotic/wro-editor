@@ -27,19 +27,25 @@ void transform_robot_per_instruction(RobotData &robot_data,
             DISTANCE_PASSED_PER_MOTOR_ROTATION * instruction->count *
             glm::sin(glm::radians(robot_data.rotation - 90.0f));
     } else if (instruction->type == InstructionType::PIVOT_TURN_RIGHT) {
-        // TODO: FIX THIS SHIT YOU MOTHERFUCKING RETARD
-        robot_data.rotation += instruction->count;
-        robot_data.rect.x +=
-            instruction->count * glm::cos(glm::radians(robot_data.rotation));
-        robot_data.rect.y +=
-            instruction->count * glm::sin(glm::radians(robot_data.rotation));
+        float offsetx = glm::cos(glm::radians(robot_data.rotation)) *
+                        (robot_data.rect.width / 2);
+        float offsety = glm::sin(glm::radians(robot_data.rotation)) *
+                        (robot_data.rect.width / 2);
+        robot_data.rotation -= instruction->count;
+        float s = glm::sin(glm::radians(robot_data.rotation));
+        float c = glm::cos(glm::radians(robot_data.rotation));
+        robot_data.rect.x -= c * (robot_data.rect.width / 2) - offsetx;
+        robot_data.rect.y -= s * (robot_data.rect.width / 2) - offsety;
     } else if (instruction->type == InstructionType::PIVOT_TURN_LEFT) {
-        // TODO: FIX THIS SHIT YOU MOTHERFUCKING RETARD x2
+        float offsetx = glm::cos(glm::radians(robot_data.rotation)) *
+                        (robot_data.rect.width / 2);
+        float offsety = glm::sin(glm::radians(robot_data.rotation)) *
+                        (robot_data.rect.width / 2);
         robot_data.rotation += instruction->count;
-        robot_data.rect.y +=
-            instruction->count * glm::cos(glm::radians(robot_data.rotation));
-        robot_data.rect.x +=
-            instruction->count * glm::sin(glm::radians(robot_data.rotation));
+        float s = glm::sin(glm::radians(robot_data.rotation));
+        float c = glm::cos(glm::radians(robot_data.rotation));
+        robot_data.rect.x += c * (robot_data.rect.width / 2) - offsetx;
+        robot_data.rect.y += s * (robot_data.rect.width / 2) - offsety;
     }
 }
 
