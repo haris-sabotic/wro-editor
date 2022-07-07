@@ -35,7 +35,7 @@ class Game {
     void on_resize_window();
 
     void render_map();
-    void render_robot(RobotData &robot_data, glm::vec3 color);
+    void render_robot(RobotData &robot_data, glm::vec4 color);
 };
 
 #endif // GAME_HPP

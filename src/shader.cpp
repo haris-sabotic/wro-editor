@@ -72,10 +72,16 @@ void Shader::set_f(const char *name, float value) const {
 void Shader::set_vec3(const char *name, float x, float y, float z) const {
     glUniform3f(glGetUniformLocation(id, name), x, y, z);
 }
+void Shader::set_vec3(const char *name, glm::vec3 vec) const {
+    glUniform3f(glGetUniformLocation(id, name), vec.x, vec.y, vec.z);
+}
+void Shader::set_vec4(const char *name, float x, float y, float z, float w) const {
+    glUniform4f(glGetUniformLocation(id, name), x, y, z, w);
+}
+void Shader::set_vec4(const char *name, glm::vec4 vec) const {
+    glUniform4f(glGetUniformLocation(id, name), vec.x, vec.y, vec.z, vec.w);
+}
 void Shader::set_mat4(const char *name, glm::mat4 value) const {
     glUniformMatrix4fv(glGetUniformLocation(id, name), 1, GL_FALSE,
                        glm::value_ptr(value));
-}
-void Shader::set_vec3(const char *name, glm::vec3 vec) const {
-    glUniform3f(glGetUniformLocation(id, name), vec.x, vec.y, vec.z);
 }

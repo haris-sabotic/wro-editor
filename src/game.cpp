@@ -4,6 +4,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "record.hpp"
 #include "robot.hpp"
+#include "constants.hpp"
 #include <cstdio>
 
 void Game::on_resize_window() {
@@ -56,6 +57,9 @@ Game::Game() {
         glfwTerminate();
         exit(1);
     }
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float quad_vertices[] = {
         // positions   // texture coordinates
@@ -138,10 +142,7 @@ void Game::render_map() {
     glBindVertexArray(0);
 }
 
-void Game::render_robot(RobotData &robot_data, glm::vec3 color) {
-    robot_shader->use();
-    robot_shader->set_vec3("color", color);
-
+void Game::render_robot(RobotData &robot_data, glm::vec4 color) {
     /// If an instruction is currently being recorded, then I should apply
     /// its transformation to the robot each frame
     RobotData robot_data_bak;
@@ -156,6 +157,37 @@ void Game::render_robot(RobotData &robot_data, glm::vec3 color) {
 
     Rect rect = adjust_robot_rect_to_screen(robot_data.rect, map_rect.width,
                                             map_rect.height);
+
+
+    robot_shader->use();
+
+    // If necessary, render the direction line first(behind the robot)
+    if (currently_recording != nullptr) {
+        switch (currently_recording->type) {
+        case InstructionType::SPIN_TURN:
+        case InstructionType::PIVOT_TURN_LEFT:
+        case InstructionType::PIVOT_TURN_RIGHT: {
+            robot_shader->set_vec4("color", ROBOT_DIRECTION_GUIDE_COLOR);
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
+            model = glm::rotate(model, glm::radians(robot_data.rotation),
+                                glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::scale(model, glm::vec3(rect.width/5, rect.height+10000, 1.0f));
+
+            robot_shader->set_mat4("model", model);
+
+            glBindVertexArray(quad_vao);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    /// Render robot
+    robot_shader->set_vec4("color", color);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);

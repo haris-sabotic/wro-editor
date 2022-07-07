@@ -52,7 +52,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         game.render_map();
-        game.render_robot(robot, glm::vec3(1, 0, 0));
+        game.render_robot(robot, glm::vec4(1, 0, 0, 1));
 
         ui::render_gl_draw_data();
 
