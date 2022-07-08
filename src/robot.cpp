@@ -31,7 +31,7 @@ void transform_robot_per_instruction(RobotData &robot_data,
                         (robot_data.rect.width / 2);
         float offsety = glm::sin(glm::radians(robot_data.rotation)) *
                         (robot_data.rect.width / 2);
-        robot_data.rotation -= instruction->count;
+        robot_data.rotation += instruction->count;
         float s = glm::sin(glm::radians(robot_data.rotation));
         float c = glm::cos(glm::radians(robot_data.rotation));
         robot_data.rect.x -= c * (robot_data.rect.width / 2) - offsetx;
@@ -41,7 +41,7 @@ void transform_robot_per_instruction(RobotData &robot_data,
                         (robot_data.rect.width / 2);
         float offsety = glm::sin(glm::radians(robot_data.rotation)) *
                         (robot_data.rect.width / 2);
-        robot_data.rotation += instruction->count;
+        robot_data.rotation -= instruction->count;
         float s = glm::sin(glm::radians(robot_data.rotation));
         float c = glm::cos(glm::radians(robot_data.rotation));
         robot_data.rect.x += c * (robot_data.rect.width / 2) - offsetx;
