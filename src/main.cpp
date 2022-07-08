@@ -1,12 +1,14 @@
 #include "game.hpp"
 #include "ui.hpp"
+#include "util.hpp"
 
 int main() {
     Game game;
 
     ui::init(game.window);
 
-    RobotData robot{Rect{0.0f, 0.0f, 170.0f, 190.0f}, -45.0f};
+    RobotData robot{Rect{0.0f, 0.0f, 170.0f, 190.0f}, -45.0f,
+                    load_texture_from_file("res/images/robot.png").id};
 
     std::vector<Program> programs = {
         Program("Program 1",
@@ -52,7 +54,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         game.render_map();
-        game.render_robot(robot, glm::vec4(1, 0, 0, 1));
+        game.render_robot(robot);
 
         ui::render_gl_draw_data();
 

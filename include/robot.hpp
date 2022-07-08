@@ -9,6 +9,7 @@
 struct RobotData {
     Rect rect;
     float rotation;
+    unsigned int texture_id;
 };
 
 Rect adjust_robot_rect_to_screen(Rect robot_rect, float map_screen_width,

@@ -13,7 +13,7 @@ class Game {
     unsigned int quad_vbo;
     unsigned int quad_ebo;
 
-    std::unique_ptr<Shader> map_shader, robot_shader;
+    std::unique_ptr<Shader> texture_shader, color_shader;
 
   public:
     int win_width = 1280;
@@ -35,7 +35,7 @@ class Game {
     void on_resize_window();
 
     void render_map();
-    void render_robot(RobotData &robot_data, glm::vec4 color);
+    void render_robot(RobotData &robot_data);
 };
 
 #endif // GAME_HPP
