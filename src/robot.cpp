@@ -57,6 +57,7 @@ void transform_robot_per_instruction(RobotData &robot_data,
         find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
 
         // keep robot within bounds
+        // also align against the walls
         if (vert1y < -(float)MAP_REAL_HEIGHT / 2 ||
             vert2y < -(float)MAP_REAL_HEIGHT / 2) {
             float y = -fmin(vert1y, vert2y) + -(float)MAP_REAL_HEIGHT / 2;
@@ -65,6 +66,18 @@ void transform_robot_per_instruction(RobotData &robot_data,
 
             robot_data.rect.x -= x;
             robot_data.rect.y += y;
+
+
+            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
+            robot_data.rotation = 0.0f;
+            robot_data.rect.y =
+                -(float)MAP_REAL_HEIGHT / 2 + robot_data.rect.height / 2;
+
+            if (vert1y < vert2y) {
+                robot_data.rect.x = vert1x + robot_data.rect.width / 2;
+            } else {
+                robot_data.rect.x = vert2x - robot_data.rect.width / 2;
+            }
         } else if (vert1y > (float)MAP_REAL_HEIGHT / 2 ||
                    vert2y > (float)MAP_REAL_HEIGHT / 2) {
             float y = fmax(vert1y, vert2y) - (float)MAP_REAL_HEIGHT / 2;
@@ -73,6 +86,18 @@ void transform_robot_per_instruction(RobotData &robot_data,
 
             robot_data.rect.x += x;
             robot_data.rect.y -= y;
+
+
+            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
+            robot_data.rotation = 180.0f;
+            robot_data.rect.y =
+                (float)MAP_REAL_HEIGHT / 2 - robot_data.rect.height / 2;
+
+            if (vert1y > vert2y) {
+                robot_data.rect.x = vert1x - robot_data.rect.width / 2;
+            } else {
+                robot_data.rect.x = vert2x + robot_data.rect.width / 2;
+            }
         } else if (vert1x < -(float)MAP_REAL_WIDTH / 2 ||
             vert2x < -(float)MAP_REAL_WIDTH / 2) {
             float x = -fmin(vert1x, vert2x) + -(float)MAP_REAL_WIDTH / 2;
@@ -81,6 +106,18 @@ void transform_robot_per_instruction(RobotData &robot_data,
 
             robot_data.rect.x += x;
             robot_data.rect.y += y;
+
+
+            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
+            robot_data.rotation = -90.0f;
+            robot_data.rect.x =
+                -(float)MAP_REAL_WIDTH / 2 + robot_data.rect.width / 2;
+
+            if (vert1x < vert2x) {
+                robot_data.rect.y = vert1y - robot_data.rect.width / 2;
+            } else {
+                robot_data.rect.y = vert2y + robot_data.rect.width / 2;
+            }
         } else if (vert1x > (float)MAP_REAL_WIDTH / 2 ||
                    vert2x > (float)MAP_REAL_WIDTH / 2) {
             float x = fmax(vert1x, vert2x) - (float)MAP_REAL_WIDTH / 2;
@@ -89,6 +126,18 @@ void transform_robot_per_instruction(RobotData &robot_data,
 
             robot_data.rect.x -= x;
             robot_data.rect.y -= y;
+
+
+            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
+            robot_data.rotation = 90.0f;
+            robot_data.rect.x =
+                (float)MAP_REAL_WIDTH / 2 - robot_data.rect.width / 2;
+
+            if (vert1x > vert2x) {
+                robot_data.rect.y = vert1y + robot_data.rect.width / 2;
+            } else {
+                robot_data.rect.y = vert2y - robot_data.rect.width / 2;
+            }
         }
 
     } else if (instruction->type == InstructionType::PIVOT_TURN_RIGHT) {
