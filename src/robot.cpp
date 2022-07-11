@@ -13,30 +13,6 @@ Rect adjust_robot_rect_to_screen(Rect robot_rect, float map_screen_width,
                 map_screen_width * uw, map_screen_height * uh};
 }
 
-void find_front_vertices(const RobotData &robot_data, float &vert1x,
-                         float &vert1y, float &vert2x, float &vert2y) {
-    vert1x = robot_data.rect.x, vert1y = robot_data.rect.y;
-    vert2x = robot_data.rect.x, vert2y = robot_data.rect.y;
-
-    float c = glm::cos(glm::radians(robot_data.rotation));
-    float s = glm::sin(glm::radians(robot_data.rotation));
-
-    float c1x = c * robot_data.rect.width / 2;
-    float c1y = s * robot_data.rect.width / 2;
-    float c2x = s * robot_data.rect.height / 2;
-    float c2y = c * robot_data.rect.height / 2;
-
-    vert1x += c2x;
-    vert1y -= c2y;
-    vert1x -= c1x;
-    vert1y -= c1y;
-
-    vert2x += c2x;
-    vert2y -= c2y;
-    vert2x += c1x;
-    vert2y += c1y;
-}
-
 void transform_robot_per_instruction(RobotData &robot_data,
                                      const Instruction *instruction) {
     if (instruction->type == InstructionType::SPIN_TURN) {
@@ -50,96 +26,6 @@ void transform_robot_per_instruction(RobotData &robot_data,
         robot_data.rect.y +=
             DISTANCE_PASSED_PER_MOTOR_ROTATION * instruction->count *
             glm::sin(glm::radians(robot_data.rotation - 90.0f));
-
-        /// Adjust transform in case it went outside the map
-        float vert1x, vert1y;
-        float vert2x, vert2y;
-        find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
-
-        // keep robot within bounds
-        // also align against the walls
-        if (vert1y < -(float)MAP_REAL_HEIGHT / 2 ||
-            vert2y < -(float)MAP_REAL_HEIGHT / 2) {
-            float y = -fmin(vert1y, vert2y) + -(float)MAP_REAL_HEIGHT / 2;
-            float l = y / glm::cos(glm::radians(robot_data.rotation));
-            float x = glm::sin(glm::radians(robot_data.rotation)) * l;
-
-            robot_data.rect.x -= x;
-            robot_data.rect.y += y;
-
-
-            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
-            robot_data.rotation = 0.0f;
-            robot_data.rect.y =
-                -(float)MAP_REAL_HEIGHT / 2 + robot_data.rect.height / 2;
-
-            if (vert1y < vert2y) {
-                robot_data.rect.x = vert1x + robot_data.rect.width / 2;
-            } else {
-                robot_data.rect.x = vert2x - robot_data.rect.width / 2;
-            }
-        } else if (vert1y > (float)MAP_REAL_HEIGHT / 2 ||
-                   vert2y > (float)MAP_REAL_HEIGHT / 2) {
-            float y = fmax(vert1y, vert2y) - (float)MAP_REAL_HEIGHT / 2;
-            float l = y / glm::cos(glm::radians(robot_data.rotation));
-            float x = glm::sin(glm::radians(robot_data.rotation)) * l;
-
-            robot_data.rect.x += x;
-            robot_data.rect.y -= y;
-
-
-            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
-            robot_data.rotation = 180.0f;
-            robot_data.rect.y =
-                (float)MAP_REAL_HEIGHT / 2 - robot_data.rect.height / 2;
-
-            if (vert1y > vert2y) {
-                robot_data.rect.x = vert1x - robot_data.rect.width / 2;
-            } else {
-                robot_data.rect.x = vert2x + robot_data.rect.width / 2;
-            }
-        } else if (vert1x < -(float)MAP_REAL_WIDTH / 2 ||
-            vert2x < -(float)MAP_REAL_WIDTH / 2) {
-            float x = -fmin(vert1x, vert2x) + -(float)MAP_REAL_WIDTH / 2;
-            float l = x / glm::cos(glm::radians(robot_data.rotation - 90.0f));
-            float y = glm::sin(glm::radians(robot_data.rotation - 90.0f)) * l;
-
-            robot_data.rect.x += x;
-            robot_data.rect.y += y;
-
-
-            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
-            robot_data.rotation = -90.0f;
-            robot_data.rect.x =
-                -(float)MAP_REAL_WIDTH / 2 + robot_data.rect.width / 2;
-
-            if (vert1x < vert2x) {
-                robot_data.rect.y = vert1y - robot_data.rect.width / 2;
-            } else {
-                robot_data.rect.y = vert2y + robot_data.rect.width / 2;
-            }
-        } else if (vert1x > (float)MAP_REAL_WIDTH / 2 ||
-                   vert2x > (float)MAP_REAL_WIDTH / 2) {
-            float x = fmax(vert1x, vert2x) - (float)MAP_REAL_WIDTH / 2;
-            float l = x / glm::cos(glm::radians(robot_data.rotation - 90.0f));
-            float y = glm::sin(glm::radians(robot_data.rotation - 90.0f)) * l;
-
-            robot_data.rect.x -= x;
-            robot_data.rect.y -= y;
-
-
-            find_front_vertices(robot_data, vert1x, vert1y, vert2x, vert2y);
-            robot_data.rotation = 90.0f;
-            robot_data.rect.x =
-                (float)MAP_REAL_WIDTH / 2 - robot_data.rect.width / 2;
-
-            if (vert1x > vert2x) {
-                robot_data.rect.y = vert1y + robot_data.rect.width / 2;
-            } else {
-                robot_data.rect.y = vert2y - robot_data.rect.width / 2;
-            }
-        }
-
     } else if (instruction->type == InstructionType::PIVOT_TURN_RIGHT) {
         float offsetx = glm::cos(glm::radians(robot_data.rotation)) *
                         (robot_data.rect.width / 2);
