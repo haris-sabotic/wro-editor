@@ -1,4 +1,7 @@
 #include "util.hpp"
+#include "glm/geometric.hpp"
+#include <cstddef>
+#include <vector>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <glad/glad.h>
@@ -53,4 +56,54 @@ Rect auto_fit_rect_in_rect(Rect out_rect, Rect in_rect) {
     }
 
     return result_rect;
+}
+
+void find_rectangle_front_vertices(const Rect &rect, float rotation,
+                                   glm::vec2 &vertl, glm::vec2 &vertr) {
+    vertl.x = rect.x, vertl.y = rect.y;
+    vertr.x = rect.x, vertr.y = rect.y;
+
+    float c = glm::cos(glm::radians(rotation));
+    float s = glm::sin(glm::radians(rotation));
+
+    float c1x = c * rect.width / 2;
+    float c1y = s * rect.width / 2;
+    float c2x = s * rect.height / 2;
+    float c2y = c * rect.height / 2;
+
+    vertl.x += c2x;
+    vertl.y -= c2y;
+    vertl.x -= c1x;
+    vertl.y -= c1y;
+
+    vertr.x += c2x;
+    vertr.y -= c2y;
+    vertr.x += c1x;
+    vertr.y += c1y;
+}
+
+bool get_line_intersection(const Line &line1, const Line &line2,
+                           glm::vec2 &intersection) {
+    /// https://stackoverflow.com/a/1968345
+
+    float s1_x, s1_y, s2_x, s2_y;
+    s1_x = line1.p1.x - line1.p0.x;
+    s1_y = line1.p1.y - line1.p0.y;
+    s2_x = line2.p1.x - line2.p0.x;
+    s2_y = line2.p1.y - line2.p0.y;
+
+    float s, t;
+    s = (-s1_y * (line1.p0.x - line2.p0.x) + s1_x * (line1.p0.y - line2.p0.y)) /
+        (-s2_x * s1_y + s1_x * s2_y);
+    t = (s2_x * (line1.p0.y - line2.p0.y) - s2_y * (line1.p0.x - line2.p0.x)) /
+        (-s2_x * s1_y + s1_x * s2_y);
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+        // Collision detected
+        intersection.x = line1.p0.x + (t * s1_x);
+        intersection.y = line1.p0.y + (t * s1_y);
+        return true;
+    }
+
+    return false; // No collision
 }

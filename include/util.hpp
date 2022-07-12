@@ -2,11 +2,17 @@
 #define UTIL_HPP
 
 #include <string_view>
+#include "glm/glm.hpp"
 #include "record.hpp"
 
 struct Rect {
     float x, y;
     float width, height;
+};
+
+struct Line {
+    glm::vec2 p0;
+    glm::vec2 p1;
 };
 
 struct Texture {
@@ -38,5 +44,18 @@ constexpr const char *instruction_type_to_string(InstructionType t) {
         return "Pivot turn right";
     }
 }
+
+/*
+ l---r
+ |   |
+ | c |
+ |   |
+ -----
+*/
+void find_rectangle_front_vertices(const Rect &rect, float rotation,
+                                   glm::vec2 &vertl, glm::vec2 &vertr);
+
+bool get_line_intersection(const Line &line1, const Line &line2,
+                           glm::vec2 &intersection);
 
 #endif // UTIL_HPP

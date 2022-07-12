@@ -1,6 +1,5 @@
 #include "game.hpp"
 #include "ui.hpp"
-#include "util.hpp"
 
 int main() {
     Game game;
