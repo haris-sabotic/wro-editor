@@ -22,7 +22,7 @@ void robot_transform(RobotData &robot_data, bool disabled);
 //
 // Lets you add/remove programs and instructions
 void programs(std::vector<Program> &programs, Instruction **currently_recording,
-              RobotData &robot_data);
+              InstructionPlayData *currently_playing, RobotData &robot_data);
 
 // Window that shows up when you start recording an instruction
 //

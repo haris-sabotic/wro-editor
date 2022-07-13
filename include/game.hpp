@@ -19,23 +19,29 @@ class Game {
     int win_width = 1280;
     int win_height = 800;
     GLFWwindow *window;
+    double delta_time;
 
     const int MAP_REAL_WIDTH = 2232;
     const int MAP_REAL_HEIGHT = 1080;
     Rect map_rect;
     Texture map_texture;
 
+    RobotData robot;
+
     // instruction currently being recorded
     Instruction *currently_recording = nullptr;
-
+    InstructionPlayData currently_playing;
+    
     Game();
     ~Game();
 
     // function to call when the window is resized
     void on_resize_window();
 
+    void update();
+
     void render_map();
-    void render_robot(RobotData &robot_data);
+    void render_robot();
 };
 
 #endif // GAME_HPP

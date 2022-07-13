@@ -1,13 +1,13 @@
+#include "constants.hpp"
 #include "game.hpp"
+#include "record.hpp"
+#include "robot.hpp"
 #include "ui.hpp"
 
 int main() {
     Game game;
 
     ui::init(game.window);
-
-    RobotData robot{Rect{0.0f, 0.0f, 170.0f, 190.0f}, -45.0f,
-                    load_texture_from_file("res/images/robot.png").id};
 
     std::vector<Program> programs = {
         Program("Program 1",
@@ -37,23 +37,35 @@ int main() {
     motor_speeds[InstructionType::MOVE_STRAIGHT] = 50.0f;
     motor_speeds[InstructionType::SPIN_TURN] = 40.0f;
 
+    double current_frame = glfwGetTime();
+    double last_frame = current_frame;
+
     while (!glfwWindowShouldClose(game.window)) {
+        current_frame = glfwGetTime();
+        game.delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+        // printf("delta time: %f\n", delta_time);
+
         ui::new_frame();
         {
-            ui::robot_transform(robot, game.currently_recording != nullptr);
+            ui::robot_transform(game.robot,
+                                game.currently_recording != nullptr);
 
-            ui::programs(programs, &game.currently_recording, robot);
+            ui::programs(programs, &game.currently_recording,
+                         &game.currently_playing, game.robot);
 
             if (game.currently_recording != nullptr)
-                ui::record(&game.currently_recording, robot, motor_speeds);
+                ui::record(&game.currently_recording, game.robot, motor_speeds);
         }
         ui::render_frame();
+
+        game.update();
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         game.render_map();
-        game.render_robot(robot);
+        game.render_robot();
 
         ui::render_gl_draw_data();
 

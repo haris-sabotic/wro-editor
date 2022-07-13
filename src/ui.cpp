@@ -55,6 +55,7 @@ void ui::robot_transform(RobotData &robot_data, bool disabled) {
 // returns false if the program needs to be deleted(button press)
 inline bool display_single_program(Program &program,
                                    Instruction **currently_recording,
+                                   InstructionPlayData *currently_playing,
                                    RobotData &robot_data) {
     if (ImGui::CollapsingHeader(program.name.c_str())) {
         // Create an empty instruction and start recording
@@ -67,6 +68,17 @@ inline bool display_single_program(Program &program,
         }
 
         ImGui::SameLine();
+
+        if (ImGui::Button("Play program")) {
+            currently_playing->program = &program;
+            currently_playing->index = 0;
+            currently_playing->count_left = fabs(program.instructions[0].count);
+            currently_playing->single_instruction = false;
+
+            robot_data.rect.x = program.start_x;
+            robot_data.rect.y = program.start_y;
+            robot_data.rotation = program.start_rotation;
+        }
 
         if (ImGui::Button("Delete program")) {
             return false;
@@ -95,8 +107,17 @@ inline bool display_single_program(Program &program,
             if (ImGui::TreeNode(
                     instruction_type_to_string(program.instructions[i].type))) {
                 ImGui::PushID(i * 3 + 500); // assign unique id
-                /// Instruction control buttons(erase, add new instruction
+                /// Instruction control buttons(play, erase, add new instruction
                 /// before this one, add new instruction after this one)
+                if (ImGui::Button("Play")) {
+                    currently_playing->program = &program;
+                    currently_playing->index = i;
+                    currently_playing->count_left =
+                        fabs(program.instructions[i].count);
+                    currently_playing->single_instruction = true;
+                    transform_robot_until_instruction(robot_data, program, i);
+                }
+
                 if (ImGui::Button("Del")) {
                     if (*currently_recording == &program.instructions[i])
                         *currently_recording = nullptr;
@@ -152,9 +173,10 @@ inline bool display_single_program(Program &program,
     return true;
 }
 
-
 void ui::programs(std::vector<Program> &programs,
-                  Instruction **currently_recording, RobotData &robot_data) {
+                  Instruction **currently_recording,
+                  InstructionPlayData *currently_playing,
+                  RobotData &robot_data) {
     static char buf[128];
 
     ImGui::Begin("Programs");
@@ -183,7 +205,7 @@ void ui::programs(std::vector<Program> &programs,
             ImGui::PushID(i * 3 + 500); // assign unique id
 
             if (!display_single_program(program, currently_recording,
-                                        robot_data)) {
+                                        currently_playing, robot_data)) {
                 programs.erase(programs.begin() + i);
             }
 
@@ -197,7 +219,7 @@ void ui::programs(std::vector<Program> &programs,
 }
 
 void ui::record(Instruction **currently_recording, RobotData &robot_data,
-            std::unordered_map<InstructionType, float> &motor_speeds) {
+                std::unordered_map<InstructionType, float> &motor_speeds) {
     ImGui::Begin("Recording...");
     {
         /// If an instruction type hasn't been selected yet, disable the button
@@ -260,9 +282,11 @@ void ui::record(Instruction **currently_recording, RobotData &robot_data,
             count_label = "Distance(rotations)";
         else // every other instruction is rotation-related
             count_label = "Angle(degrees)";
-        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count, 0.5f, 1.0f);
+        ImGui::InputFloat(count_label.c_str(), &(*currently_recording)->count,
+                          0.5f, 1.0f);
 
-        ImGui::InputFloat("Motor speed", &(*currently_recording)->speed, 1.0f, 2.0f);
+        ImGui::InputFloat("Motor speed", &(*currently_recording)->speed, 1.0f,
+                          2.0f);
     }
     ImGui::End();
 }

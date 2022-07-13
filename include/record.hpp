@@ -41,4 +41,11 @@ struct Program {
           start_y(start_y), start_rotation(start_rotation) {}
 };
 
+struct InstructionPlayData {
+    Program *program = nullptr;
+    size_t index = 0;
+    float count_left;
+    bool single_instruction;
+};
+
 #endif // RECORD_HPP

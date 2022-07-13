@@ -14,4 +14,11 @@ const float DISTANCE_PASSED_PER_MOTOR_ROTATION = 120.0f;
 
 const glm::vec4 ROBOT_DIRECTION_GUIDE_COLOR = glm::vec4(1.0f, 1.0f, 1.0f, 0.6f);
 
+// Distance passed over 1 second at 100% motor speed
+const float MOVE_STRAIGHT_SPEED = 1.0f;
+// Degrees rotated over 1 second at 100% motor speed
+const float SPIN_TURN_SPEED = 180.0f;
+// Degrees rotated over 1 second at 100% motor speed
+const float PIVOT_TURN_SPEED = 90.0f;
+
 #endif // CONSTANTS_HPP

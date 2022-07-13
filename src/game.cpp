@@ -111,6 +111,9 @@ Game::Game() {
         Shader("shaders/color.vs", "shaders/color.fs"));
 
     on_resize_window();
+
+    robot = RobotData{Rect{0.0f, 0.0f, 170.0f, 190.0f}, -45.0f,
+                      load_texture_from_file("res/images/robot.png").id};
 }
 
 Game::~Game() {
@@ -143,20 +146,20 @@ void Game::render_map() {
     glBindVertexArray(0);
 }
 
-void Game::render_robot(RobotData &robot_data) {
+void Game::render_robot() {
     /// If an instruction is currently being recorded, then I should apply
     /// its transformation to the robot each frame
-    RobotData robot_data_bak;
+    RobotData robot_bak;
     bool made_bak = false;
     if (currently_recording != nullptr) {
         if (currently_recording->type != InstructionType::NOOP) {
-            robot_data_bak = robot_data;
+            robot_bak = robot;
             made_bak = true;
-            transform_robot_per_instruction(robot_data, currently_recording);
+            transform_robot_per_instruction(robot, currently_recording);
         }
     }
 
-    Rect rect = adjust_robot_rect_to_screen(robot_data.rect, map_rect.width,
+    Rect rect = adjust_robot_rect_to_screen(robot.rect, map_rect.width,
                                             map_rect.height);
 
     // If necessary, render the direction line first(behind the robot)
@@ -170,7 +173,7 @@ void Game::render_robot(RobotData &robot_data) {
 
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-            model = glm::rotate(model, glm::radians(robot_data.rotation),
+            model = glm::rotate(model, glm::radians(robot.rotation),
                                 glm::vec3(0.0f, 0.0f, 1.0f));
             model = glm::scale(
                 model, glm::vec3(rect.width / 5, rect.height + 10000, 1.0f));
@@ -188,20 +191,20 @@ void Game::render_robot(RobotData &robot_data) {
 
     /// Render robot
     texture_shader->use();
-    texture_shader->set_i("texture_id", robot_data.texture_id);
+    texture_shader->set_i("texture_id", robot.texture_id);
 
     /// apply transformations
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(rect.x, rect.y, 0.0f));
-    model = glm::rotate(model, glm::radians(robot_data.rotation),
+    model = glm::rotate(model, glm::radians(robot.rotation),
                         glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::scale(model, glm::vec3(rect.width, rect.height, 1.0f));
 
     texture_shader->set_mat4("model", model);
 
     glBindVertexArray(quad_vao);
-    glActiveTexture(GL_TEXTURE0 + robot_data.texture_id);
-    glBindTexture(GL_TEXTURE_2D, robot_data.texture_id);
+    glActiveTexture(GL_TEXTURE0 + robot.texture_id);
+    glBindTexture(GL_TEXTURE_2D, robot.texture_id);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);
@@ -210,5 +213,68 @@ void Game::render_robot(RobotData &robot_data) {
     // after rendering to avoid reapplying it each frame(otherwise the
     // instruction will run infinitely)
     if (made_bak)
-        robot_data = robot_data_bak;
+        robot = robot_bak;
+}
+
+void Game::update() {
+    if (currently_playing.program != nullptr) {
+        if (currently_playing.count_left <= 0.0f) {
+            if (currently_playing.single_instruction) {
+                currently_playing.program = nullptr;
+                currently_playing.index = 0;
+                return;
+            } else {
+                currently_playing.index++;
+                if (currently_playing.index >=
+                    currently_playing.program->instructions.size()) {
+                    currently_playing.program = nullptr;
+                    currently_playing.index = 0;
+                    return;
+                } else {
+                    currently_playing.count_left =
+                        fabs(currently_playing.program
+                                 ->instructions[currently_playing.index]
+                                 .count);
+                }
+            }
+        }
+
+        Instruction i =
+            currently_playing.program->instructions[currently_playing.index];
+
+        float movement_speed = 0.0f;
+        switch (i.type) {
+        case InstructionType::MOVE_STRAIGHT:
+            movement_speed = MOVE_STRAIGHT_SPEED;
+            break;
+        case InstructionType::SPIN_TURN:
+            movement_speed = SPIN_TURN_SPEED;
+            break;
+        case InstructionType::PIVOT_TURN_LEFT:
+            movement_speed = PIVOT_TURN_SPEED;
+            break;
+        case InstructionType::PIVOT_TURN_RIGHT:
+            movement_speed = PIVOT_TURN_SPEED;
+            break;
+        case InstructionType::NOOP:
+            movement_speed = 0.0f;
+            break;
+        }
+
+        i.count = delta_time * movement_speed * (i.speed / 100);
+
+        if (currently_playing.program->instructions[currently_playing.index]
+                .count < 0.0f)
+            i.count *= -1;
+
+        if (currently_playing.count_left - fabs(i.count) < 0.0f) {
+            if (i.count < 0.0f)
+                i.count = -currently_playing.count_left;
+            else
+                i.count = currently_playing.count_left;
+        }
+        currently_playing.count_left -= fabs(i.count);
+
+        transform_robot_per_instruction(robot, &i);
+    }
 }
