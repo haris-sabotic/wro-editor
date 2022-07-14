@@ -74,6 +74,9 @@ inline bool display_single_program(Program &program,
             currently_playing->index = 0;
             currently_playing->count_left = fabs(program.instructions[0].count);
             currently_playing->single_instruction = false;
+            currently_playing->start_x = program.start_x;
+            currently_playing->start_y = program.start_y;
+            currently_playing->start_rotation = program.start_rotation;
 
             robot_data.rect.x = program.start_x;
             robot_data.rect.y = program.start_y;
@@ -116,6 +119,9 @@ inline bool display_single_program(Program &program,
                         fabs(program.instructions[i].count);
                     currently_playing->single_instruction = true;
                     transform_robot_until_instruction(robot_data, program, i);
+                    currently_playing->start_x = robot_data.rect.x;
+                    currently_playing->start_y = robot_data.rect.y;
+                    currently_playing->start_rotation = robot_data.rotation;
                 }
 
                 if (ImGui::Button("Del")) {

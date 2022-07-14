@@ -235,6 +235,10 @@ void Game::update() {
                         fabs(currently_playing.program
                                  ->instructions[currently_playing.index]
                                  .count);
+                    currently_playing.start_x = robot.rect.x;
+                    currently_playing.start_y = robot.rect.y;
+                    currently_playing.start_rotation = robot.rotation;
+                    currently_playing.play_time = 0.0f;
                 }
             }
         }
@@ -261,19 +265,25 @@ void Game::update() {
             break;
         }
 
-        i.count = delta_time * movement_speed * (i.speed / 100);
+        currently_playing.play_time += delta_time;
+
+        i.count =
+            currently_playing.play_time * movement_speed * (i.speed / 100);
 
         if (currently_playing.program->instructions[currently_playing.index]
                 .count < 0.0f)
             i.count *= -1;
 
-        if (currently_playing.count_left - fabs(i.count) < 0.0f) {
-            if (i.count < 0.0f)
-                i.count = -currently_playing.count_left;
-            else
-                i.count = currently_playing.count_left;
+        float og_count = currently_playing.program->instructions[currently_playing.index].count;
+
+        if (fabs(i.count) > fabs(og_count)) {
+            i.count = og_count;
         }
-        currently_playing.count_left -= fabs(i.count);
+        currently_playing.count_left = fabs(og_count) - fabs(i.count);
+
+        robot.rect.x = currently_playing.start_x;
+        robot.rect.y = currently_playing.start_y;
+        robot.rotation = currently_playing.start_rotation;
 
         transform_robot_per_instruction(robot, &i);
     }

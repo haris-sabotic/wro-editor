@@ -46,6 +46,10 @@ struct InstructionPlayData {
     size_t index = 0;
     float count_left;
     bool single_instruction;
+    float start_x;
+    float start_y;
+    float start_rotation;
+    double play_time = 0.0f;
 };
 
 #endif // RECORD_HPP
