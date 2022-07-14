@@ -51,24 +51,12 @@ void transform_robot_per_instruction(RobotData &robot_data,
         glm::vec2 intersection(0.0f, 0.0f);
         if (!(robot_data.rotation == 0.0f && vert_l_line.p1.y > top.p1.y)) {
             if (get_line_intersection(vert_l_line, top, intersection)) {
-                glm::vec2 offset = vert_l_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 0.0f;
                 robot_data.rect.x = intersection.x + robot_data.rect.width / 2;
                 robot_data.rect.y = intersection.y + robot_data.rect.height / 2;
             }
             if (get_line_intersection(vert_r_line, top, intersection)) {
-                glm::vec2 offset = vert_r_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 0.0f;
                 robot_data.rect.x = intersection.x - robot_data.rect.width / 2;
@@ -78,24 +66,12 @@ void transform_robot_per_instruction(RobotData &robot_data,
 
         if (!(robot_data.rotation == 90.0f && vert_l_line.p1.x < right.p1.x)) {
             if (get_line_intersection(vert_l_line, right, intersection)) {
-                glm::vec2 offset = vert_l_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 90.0f;
                 robot_data.rect.x = intersection.x - robot_data.rect.width / 2;
                 robot_data.rect.y = intersection.y + robot_data.rect.width / 2;
             }
             if (get_line_intersection(vert_r_line, right, intersection)) {
-                glm::vec2 offset = vert_r_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 90.0f;
                 robot_data.rect.x = intersection.x - robot_data.rect.width / 2;
@@ -106,24 +82,12 @@ void transform_robot_per_instruction(RobotData &robot_data,
         if (!(robot_data.rotation == 180.0f &&
               vert_l_line.p1.y < bottom.p1.y)) {
             if (get_line_intersection(vert_l_line, bottom, intersection)) {
-                glm::vec2 offset = vert_l_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 180.0f;
                 robot_data.rect.x = intersection.x - robot_data.rect.width / 2;
                 robot_data.rect.y = intersection.y - robot_data.rect.height / 2;
             }
             if (get_line_intersection(vert_r_line, bottom, intersection)) {
-                glm::vec2 offset = vert_r_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 180.0f;
                 robot_data.rect.x = intersection.x + robot_data.rect.width / 2;
@@ -133,24 +97,12 @@ void transform_robot_per_instruction(RobotData &robot_data,
 
         if (!(robot_data.rotation == 270.0f && vert_l_line.p1.x > left.p1.x)) {
             if (get_line_intersection(vert_l_line, left, intersection)) {
-                glm::vec2 offset = vert_l_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 270.0f;
                 robot_data.rect.x = intersection.x + robot_data.rect.width / 2;
                 robot_data.rect.y = intersection.y - robot_data.rect.width / 2;
             }
             if (get_line_intersection(vert_r_line, left, intersection)) {
-                glm::vec2 offset = vert_r_line.p1 - intersection;
-
-                // move robot to intersection point
-                robot_data.rect.x -= offset.x;
-                robot_data.rect.y -= offset.y;
-
                 // rotate and reposition robot after hitting the wall
                 robot_data.rotation = 270.0f;
                 robot_data.rect.x = intersection.x + robot_data.rect.width / 2;
